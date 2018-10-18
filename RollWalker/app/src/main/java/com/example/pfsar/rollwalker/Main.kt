@@ -21,9 +21,7 @@ import android.support.v4.app.FragmentManager
 import android.support.v4.app.NotificationCompat
 import android.support.v4.content.ContextCompat
 import android.util.Log
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
+import android.view.*
 import android.widget.Toast
 
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -34,7 +32,6 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import java.security.AccessController.getContext
 import java.util.*
-import android.view.ViewGroup
 import android.widget.ProgressBar
 import android.widget.TextView
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -252,7 +249,7 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
         Log.i(TAG, "Travaled $mDistanceTraveledSinceRoll")
 
         val progressBar = findViewById<ProgressBar>(R.id.progress_to_next_roll)
-        val percentDone = Math.round((DISTANCE_BETWEEN_ROLLS - mDistanceTraveledSinceRoll) * 100).toInt()
+        val percentDone = Math.round(mDistanceTraveledSinceRoll / DISTANCE_BETWEEN_ROLLS * 100).toInt()
         progressBar.progress = percentDone
 
         while(mDistanceTraveledSinceRoll > DISTANCE_BETWEEN_ROLLS)
