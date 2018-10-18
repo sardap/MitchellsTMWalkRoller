@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">RollWalker</string>
+    <string name="title_activity_main">Map</string>
+    <string name="roll_desc">Last Roll: </string>
+    <string name="roll_result_defualt"> haven\'t rolled yet </string>
+    <string name="main_menu_option"> main screen </string>
+    <string name="see_last_rolls"> Prevouis rolls </string>
+    <string name="roll">roll:</string>
+    <string name="rolled_max_title">YOU FUCKING DID IT</string>
+    <string name="rolled_max_contents">YOU FUCKING DID IT YOU ROLLED %d</string>
+    <string name="roll_channel_desc">Rolling channel</string>
+</resources>

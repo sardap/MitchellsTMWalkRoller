@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:android="http://schemas.android.com/apk/res/android"
+>
+    <item android:id="@+id/menu_switch_to_main"
+          android:title="@string/main_menu_option"
+          app:showAsAction="ifRoom"
+    />
+    <item android:id="@+id/menu_see_last_rolls"
+          android:title="@string/see_last_rolls"
+    />
+</menu>
