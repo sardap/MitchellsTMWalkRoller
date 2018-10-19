@@ -15,6 +15,8 @@ import android.location.LocationManager
 import android.os.Build
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.os.VibrationEffect
+import android.os.Vibrator
 import android.support.v4.app.ActivityCompat
 import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentManager
@@ -46,6 +48,8 @@ import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
+import org.w3c.dom.Text
+import kotlin.collections.ArrayList
 import kotlin.math.absoluteValue
 
 
@@ -61,6 +65,10 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var auth: FirebaseAuth
     private var mUser: FirebaseUser? = null
     private val mRollsToPush: Stack<Int> = Stack()
+    private var mMaxRoll: Int = 0
+    private var mComboNum: Int = 0
+    private var mMaxCombo: Int = 0
+    private var mMaxBroken: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -82,6 +90,7 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 
         auth = FirebaseAuth.getInstance()
         signIn()
+        initlise()
     }
 
     private fun signIn() {
@@ -110,10 +119,45 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
                             }
                             override fun onDataChange(snapshot: DataSnapshot) {
                                 if (!snapshot.hasChild("rolls")) {
-                                    myRef.setValue("rolls")
+                                    val vaule = ArrayList<Int>()
+                                    myRef.child("roll").setValue(vaule)
                                 }
                             }
                     })
+
+                    myRef.addListenerForSingleValueEvent(
+                        object : ValueEventListener {
+                            override fun onCancelled(p0: DatabaseError) {
+                            }
+                            override fun onDataChange(snapshot: DataSnapshot) {
+                                val target = if (!snapshot.hasChild("level")) {
+                                    myRef.setValue("level")
+                                    myRef.child("level").setValue(START_MAX_ROLL)
+                                    START_MAX_ROLL
+                                } else {
+                                    val result = snapshot.child("level").value
+                                    result.toString().toInt()
+                                }
+
+                                SetTarget(target)
+                            }
+                        })
+
+                    myRef.addListenerForSingleValueEvent(
+                        object : ValueEventListener {
+                            override fun onCancelled(p0: DatabaseError) {
+                            }
+                            override fun onDataChange(snapshot: DataSnapshot) {
+                                mMaxCombo = if (!snapshot.hasChild("combo")) {
+                                    myRef.setValue("combo")
+                                    myRef.child("combo").setValue(0)
+                                    0
+                                } else {
+                                    val result = snapshot.child("combo").value
+                                    result.toString().toInt()
+                                }
+                            }
+                        })
 
                 } else {
                     // If sign in fails, display a message to the user.
@@ -254,9 +298,54 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 
         while(mDistanceTraveledSinceRoll > DISTANCE_BETWEEN_ROLLS)
         {
+            var v = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+            // Vibrate for 500 milliseconds
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                v.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
+            } else {
+                //deprecated in API 26
+                v.vibrate(500);
+            }
+
+
             mDistanceTraveledSinceRoll -= DISTANCE_BETWEEN_ROLLS
 
-            mLastRoll = (MIN_ROLL .. MAX_ROLL).random()
+
+            val nextRoll = (MIN_ROLL .. mMaxRoll).random()
+
+            if(nextRoll > mLastRoll)
+            {
+                mComboNum++
+
+                if(mComboNum > mMaxCombo)
+                {
+                    mMaxBroken = true
+                }
+            }
+            else
+            {
+                if(mMaxBroken)
+                {
+                    val database = FirebaseDatabase.getInstance()
+
+                    val myRef = database.getReference(mUser!!.uid)
+
+                    myRef.child("combo").setValue(mComboNum)
+
+                    Toast.makeText(this, getString(R.string.combo_broken_message, mMaxCombo, mComboNum),  Toast.LENGTH_LONG).show()
+
+                    mMaxCombo = mComboNum
+
+                    mMaxBroken = false
+                }
+
+                mComboNum = 0
+            }
+
+
+            findViewById<TextView>(R.id.roll_combo).text = getString(R.string.combo_title, mComboNum)
+
+            mLastRoll = nextRoll
 
             Log.i(TAG, "Rolled $mLastRoll")
 
@@ -277,21 +366,39 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
                 text.text = mLastRoll.toString()
             }
 
-            if(mLastRoll == MAX_ROLL)
+            if(mLastRoll == mMaxRoll)
             {
                 Toast.makeText(this, getString(R.string.rolled_max_contents, mLastRoll),  Toast.LENGTH_LONG).show()
+
+                SetTarget(mMaxRoll * 10)
+
+                val database = FirebaseDatabase.getInstance()
+                val myRef = database.getReference(mUser!!.uid)
+                myRef.child("level").setValue(mMaxRoll)
+
             }
 
             progressBar.progress = 0
         }
     }
 
+    private fun SetTarget(value: Int)
+    {
+        mMaxRoll = value
+        findViewById<TextView>(R.id.roll_target).text = getString(R.string.target_title, mMaxRoll)
+    }
+
+    private fun initlise()
+    {
+        findViewById<TextView>(R.id.roll_combo).text = getString(R.string.combo_title, 0)
+    }
+
     companion object {
         private const val PERMISSION_REQUEST_ACCESS_FINE_LOCATION = 100
         private const val TAG = "ROLL_WALKER"
-        private const val DISTANCE_BETWEEN_ROLLS = 1000
+        private const val DISTANCE_BETWEEN_ROLLS = 500
         private const val MIN_ROLL = 1
-        private const val MAX_ROLL = 10000
+        private const val START_MAX_ROLL = 10
         private const val RC_SIGN_IN = 9001
     }
 }
