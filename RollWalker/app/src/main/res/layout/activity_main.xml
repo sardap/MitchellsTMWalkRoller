@@ -63,6 +63,57 @@
             style="@android:style/Widget.ProgressBar.Horizontal"
     />
 
+    <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="50sp"
+            android:gravity="center"
+    >
+
+        <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+        >
+
+            <ImageView
+                    android:layout_width="300sp"
+                    android:layout_height="300sp"
+                    android:background="#000000"
+                    tools:ignore="ContentDescription"
+            />
+
+            <ImageView
+                    android:layout_width="280sp"
+                    android:layout_height="280sp"
+                    android:background="#FFFFFF"
+                    android:gravity="center"
+                    tools:ignore="ContentDescription"
+                    android:layout_centerInParent="true"/>
+
+
+            <TextView
+                    android:id="@+id/roll_animation_result"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="99"
+                    android:textSize="50sp"
+                    android:textAlignment="center"
+                    android:textColor="#FF0000"
+                    android:layout_centerHorizontal="true"
+                    android:layout_centerVertical="true"
+
+            />
+
+        </RelativeLayout>
+
+
+    </RelativeLayout>
+
+    <Chronometer
+            android:id="@+id/roll_anime_timer"
+            android:layout_width="1sp"
+            android:layout_height="1sp"
+    />
 
     <FrameLayout android:id="@+id/main_frame" android:layout_width="wrap_content" android:layout_height="wrap_content">
         <fragment xmlns:android="http://schemas.android.com/apk/res/android"
