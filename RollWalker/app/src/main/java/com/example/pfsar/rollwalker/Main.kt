@@ -58,13 +58,10 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var googleSignInClient: GoogleSignInClient
     private lateinit var auth: FirebaseAuth
     private var mUser: FirebaseUser? = null
-    private val mRollsToPush  = Stack<Long>()
     private var mRef: DatabaseReference? = null
     private val mLoaded = hashMapOf(ROLL_CHILD to false, LEVEL_CHILD to false, COMBO_CHILD to false, PROGRESS_CHILD to false, SEED_CHILD to true)
     private lateinit var mViewHolder: ViewHolder
-    private var mSeed: Long = 0
     private lateinit var mRollData: ArrayList<RollData>
-    private var mRandom = Random()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -154,7 +151,15 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
             R.id.menu_see_last_rolls -> {
                 if(mActiveFragment !is LastRollFragment)
                 {
-                    replaceFragment(LastRollFragment())
+                    if(mLoaded.all { it .value })
+                    {
+                        replaceFragment(LastRollFragment.newInstance(mRollData, this))
+                    }
+                    else
+                    {
+                        Toast.makeText(applicationContext, "Not ready yet!", Toast.LENGTH_SHORT).show()
+                    }
+
                 }
                 true
             }
@@ -204,8 +209,7 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 
                                 mRollData = if (!snapshot.hasChild(ROLL_CHILD)) {
                                     val vaule = ArrayList<RollData>()
-                                    val seed = RANDOM.nextLong()
-                                    vaule.add(RollData(START_MAX_ROLL.toLong(), 0))
+                                    vaule.add(RollData(START_MAX_ROLL.toLong(), 0.0))
                                     mRef!!.child(ROLL_CHILD).setValue(vaule)
                                     vaule
                                 }
@@ -216,7 +220,7 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 
                                     for(entry in value)
                                     {
-                                        result.add(RollData(entry["target"] as Long, entry["numberOfRolls"] as Long))
+                                        result.add(RollData(entry["target"] as Long, entry["distance"] as Double))
                                     }
 
                                     result
@@ -314,10 +318,13 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 
                 Log.i(Main.TAG, "Latitute: $latitude ; Longitute: $longitude")
 
-                mDistanceTraveledSinceRoll += mLastLocation!!.distanceTo(location)
+                val distance = mLastLocation!!.distanceTo(location)
+
+                mDistanceTraveledSinceRoll += distance
 
                 if(mLoaded.all { it.value })
                 {
+                    mRollData.last().distance += distance
                     tryRoll()
                     mRef!!.child(PROGRESS_CHILD).setValue(mDistanceTraveledSinceRoll)
                 }
@@ -395,8 +402,6 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun addRollToDatabase() {
-        mRollData[mRollData.size - 1].numberOfRolls += mRollsToPush.size.toLong()
-        mRollsToPush.clear()
         mRef!!.child(ROLL_CHILD).setValue(mRollData)
     }
 
@@ -407,7 +412,7 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 
         mRef!!.child(LEVEL_CHILD).setValue(maxRoll)
 
-        mRollData.add(RollData(maxRoll, 0))
+        mRollData.add(RollData(maxRoll, 0.0))
     }
 
     private fun vibrate()
@@ -445,8 +450,6 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 
         lastRoll = nextRoll
 
-        mRollsToPush.push(lastRoll)
-
         addRollToDatabase()
 
         if(lastRoll == maxRoll)
@@ -480,11 +483,11 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
         const val COMBO_CHILD = "combo"
         const val PROGRESS_CHILD = "progress"
         const val SEED_CHILD = "seed"
+        const val DISTANCE_BETWEEN_ROLLS = 2
 
-        private const val DISTANCE_BETWEEN_ROLLS = 2
         private const val MIN_ROLL = 1L
         private const val START_MAX_ROLL = 10L
-        private const val ANIMATION_COUNT = 100
+        private const val ANIMATION_COUNT = 500
         private const val RC_SIGN_IN = 9001
         private const val PERMISSION_REQUEST_ACCESS_FINE_LOCATION = 100
     }

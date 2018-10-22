@@ -1,5 +1,6 @@
 package com.example.pfsar.rollwalker
 
+import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
 import android.support.v4.app.Fragment
@@ -8,6 +9,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import com.google.firebase.database.collection.LLRBNode
 import java.util.*
 
 class MainFragment : Fragment() {
@@ -18,14 +20,12 @@ class MainFragment : Fragment() {
         }
 
         val COLOURS_LIST: MutableList<Int> = Arrays.asList(
-            (0xFF00FF00).toInt(),
-            (0xFF0000FF).toInt(),
-            (0xFFFFC0CB).toInt(),
-            (0xFFffa500).toInt(),
-            (0xFFEEE8AA).toInt(),
-            (0xFFFFFFF0).toInt(),
-            (0xFF228B22).toInt(),
-            (0xFF9400D3).toInt()
+            Color.RED,
+            Color.BLUE,
+            Color.CYAN,
+            Color.GREEN,
+            Color.MAGENTA,
+            Color.YELLOW
         )!!
     }
 
@@ -76,6 +76,7 @@ class MainFragment : Fragment() {
 
             private var mNextAnimeUpdate = 0L
             private var mAnimeNextIncremnet = 0.1
+            private var mPrevColour: Int = 0
 
             override fun run()
             {
@@ -87,14 +88,16 @@ class MainFragment : Fragment() {
                         val next = main.animeRollStack.pop().toString()
                         mViewHolder.animeRollResult.text = next
 
-                        if(main.animeRollStack.size > 0)
+                        var nextColour: Int
+
+                        do
                         {
-                            mViewHolder.animeRollResult.setTextColor(Utils.randomValue<Int>(COLOURS_LIST))
-                        }
-                        else
-                        {
-                            mViewHolder.animeRollResult.setTextColor(0xFFFF0000.toInt())
-                        }
+                            nextColour = Utils.randomValue(COLOURS_LIST)
+                        } while (mPrevColour == nextColour)
+
+                        mPrevColour = nextColour
+
+                        mViewHolder.animeRollResult.setTextColor(nextColour)
 
 
                         mViewHolder.rollResult.text = next
@@ -104,11 +107,11 @@ class MainFragment : Fragment() {
 
                         if(main.animeRollStack.size > 25)
                         {
-                            mAnimeNextIncremnet += 0.001
+                            mAnimeNextIncremnet += 0.10
                         }
                         else if(main.animeRollStack.size > 15)
                         {
-                            mAnimeNextIncremnet += 20
+                            mAnimeNextIncremnet = 50.0
                         }
                         else if(mAnimeNextIncremnet > 5)
                         {
@@ -125,9 +128,10 @@ class MainFragment : Fragment() {
                 else
                 {
                     mAnimeNextIncremnet = 0.0
+                    mViewHolder.animeRollResult.setTextColor(Color.RED)
                 }
 
-                handler.postDelayed(this, 5)
+                handler.postDelayed(this, 30)
             }
         }
 

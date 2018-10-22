@@ -12,4 +12,8 @@
     <string name="roll_channel_desc">Rolling channel</string>
     <string name="target_title">Target: %d</string>
     <string name="combo_title">COMBO: %d</string>
+    <string name="result_target_title">Target %d</string>
+    <string name="result_num_of_rolls">Rolls %d</string>
+    <string name="result_distance_travled_title">Traveled %s</string>
+    <string name="result_title">HALL OF HISTORY</string>
 </resources>
