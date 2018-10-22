@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent">
+
+    <TextView
+            android:id="@+id/roll_target"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="30sp"
+            android:layout_marginStart="10sp"
+            android:textColor="@color/textLarge"
+            android:text="@string/target_title"
+    />
+
+    <TextView
+            android:id="@+id/roll_combo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="30sp"
+            android:layout_marginStart="10sp"
+            android:textColor="@color/textLarge"
+            android:text="@string/target_title"
+    />
+
+
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                  xmlns:tools="http://schemas.android.com/tools"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  tools:context=".Main"
+                  android:orientation="horizontal"
+    >
+        <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/roll_desc"
+                android:textSize="30sp"
+                android:layout_marginStart="10sp"
+                android:textColor="@color/textLarge"
+        />
+
+        <TextView
+                android:id="@+id/rollResult"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="30sp"
+                android:layout_marginStart="10sp"
+                android:textColor="@color/textLarge"
+                android:text="@string/roll_result_defualt"
+        />
+
+    </LinearLayout>
+
+
+    <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="50sp"
+            android:gravity="center"
+    >
+
+        <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+        >
+
+            <ImageView
+                    android:layout_width="300sp"
+                    android:layout_height="300sp"
+                    android:background="#000000"
+                    tools:ignore="ContentDescription"
+            />
+
+            <ImageView
+                    android:layout_width="280sp"
+                    android:layout_height="280sp"
+                    android:background="#FFFFFF"
+                    android:gravity="center"
+                    tools:ignore="ContentDescription"
+                    android:layout_centerInParent="true"/>
+
+
+            <TextView
+                    android:id="@+id/roll_animation_result"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="99"
+                    android:textSize="50sp"
+                    android:textAlignment="center"
+                    android:textColor="#FF0000"
+                    android:layout_centerHorizontal="true"
+                    android:layout_centerVertical="true"
+
+            />
+
+        </RelativeLayout>
+
+
+    </RelativeLayout>
+
+
+</LinearLayout>

@@ -3,10 +3,6 @@ package com.example.pfsar.rollwalker
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.app.AlarmManager
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.PendingIntent.getActivity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -18,23 +14,16 @@ import android.support.v7.app.AppCompatActivity
 import android.support.v4.app.ActivityCompat
 import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentManager
-import android.support.v4.app.NotificationCompat
 import android.support.v4.content.ContextCompat
 import android.util.Log
 import android.view.*
-import android.widget.Chronometer
 import android.widget.Toast
 
-import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
-import java.security.AccessController.getContext
 import java.util.*
 import android.widget.ProgressBar
-import android.widget.TextView
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -44,44 +33,45 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.database.*
-import org.w3c.dom.Text
 import kotlin.collections.ArrayList
-import kotlin.math.absoluteValue
+import kotlin.collections.HashMap
 
 
 class Main : AppCompatActivity(), OnMapReadyCallback {
 
     private class ViewHolder(activity: Activity) {
 
-        val rollResult: TextView = activity.findViewById(R.id.rollResult)
-        val rollCombo: TextView = activity.findViewById(R.id.roll_combo)
-        val animeRollResult: TextView = activity.findViewById(R.id.roll_animation_result)
         val porgressBar: ProgressBar = activity.findViewById(R.id.progress_to_next_roll)
-        val rollTarget: TextView = activity.findViewById(R.id.roll_target)
     }
 
+    var animeRollStack = Stack<Long>()
+    var maxRoll = 0L
+    var comboNum = 0
+    var maxCombo = 0
+    var lastRoll = 0L
+
     private lateinit var mMap: GoogleMap
-    private lateinit var mFragmentStack: Stack<Fragment>
     private lateinit var mFragmentManager: FragmentManager
+    private lateinit var mActiveFragment: Fragment
     private var mLastLocation: Location? = null
     private var mDistanceTraveledSinceRoll = 0e0
-    private var mLastRoll = 0
     private lateinit var googleSignInClient: GoogleSignInClient
     private lateinit var auth: FirebaseAuth
     private var mUser: FirebaseUser? = null
-    private val mRollsToPush: Stack<Int> = Stack()
-    private var mMaxRoll: Int = 0
-    private var mComboNum: Int = 0
-    private var mMaxCombo: Int = 0
+    private val mRollsToPush  = Stack<Long>()
     private var mRef: DatabaseReference? = null
-    private val mLoaded = hashMapOf<String, Boolean>(ROLL_CHILD to false, LEVEL_CHILD to false, COMBO_CHILD to false, PROGRESS_CHILD to false)
-    private var mAnimeRollStack = Stack<Int>()
+    private val mLoaded = hashMapOf(ROLL_CHILD to false, LEVEL_CHILD to false, COMBO_CHILD to false, PROGRESS_CHILD to false, SEED_CHILD to true)
     private lateinit var mViewHolder: ViewHolder
+    private var mSeed: Long = 0
+    private lateinit var mRollData: ArrayList<RollData>
+    private var mRandom = Random()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         setContentView(R.layout.activity_main)
+
+        replaceFragment(MainFragment())
+
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
@@ -100,6 +90,10 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
         auth = FirebaseAuth.getInstance()
         signIn()
         initlise()
+    }
+
+    override fun onStart() {
+        super.onStart()
     }
 
     override fun onDestroy() {
@@ -129,7 +123,6 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
         mMap.setMyLocationEnabled(true);
-
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
@@ -152,10 +145,17 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
         // Handle item selection
         return when (item.itemId) {
             R.id.menu_switch_to_main -> {
-                replaceFragment(mFragmentManager.findFragmentById(R.id.map) as Fragment)
+                if(mActiveFragment !is MainFragment)
+                {
+                    replaceFragment(MainFragment())
+                }
                 true
             }
             R.id.menu_see_last_rolls -> {
+                if(mActiveFragment !is LastRollFragment)
+                {
+                    replaceFragment(LastRollFragment())
+                }
                 true
             }
             else -> super.onOptionsItemSelected(item)
@@ -172,57 +172,6 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 
 
     private fun initlise() {
-        mViewHolder.rollCombo.text = getString(R.string.combo_title, 0)
-        mViewHolder.rollResult.text = getString(R.string.roll_result_defualt, 0)
-
-        val handler = Handler()
-
-        val updater = object : Runnable {
-
-            private var mTime = 0L
-            private var mNextAnimeUpdate = 0L
-            private var mAnimeNextIncremnet = 0.1
-
-            override fun run()
-            {
-                val now = System.currentTimeMillis();
-
-                if (!mAnimeRollStack.empty()) {
-                    if (now > mNextAnimeUpdate) {
-
-                        val next = mAnimeRollStack.pop().toString()
-                        mViewHolder.animeRollResult.text = next
-                        mViewHolder.rollResult.text = next
-
-                        mNextAnimeUpdate = now + mAnimeNextIncremnet.toLong()
-
-
-                        if(mAnimeRollStack.size > 15)
-                        {
-                            mAnimeNextIncremnet += 20
-                        }
-                        else if(mAnimeNextIncremnet > 5)
-                        {
-                            mAnimeNextIncremnet += 40
-                        }
-                        else
-                        {
-                            mAnimeNextIncremnet += 100
-                        }
-
-                        Log.w(TAG, "Now:$now NextTime:$mAnimeNextIncremnet StackSize:${mAnimeRollStack.size} NextVaule:$next")
-                    }
-                }
-                else
-                {
-                    mAnimeNextIncremnet = 0.0
-                }
-
-                handler.postDelayed(this, 30)
-            }
-        }
-
-        handler.post(updater)
     }
 
     private fun signIn() {
@@ -253,9 +202,24 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
                             override fun onDataChange(snapshot: DataSnapshot) {
                                 mLoaded[ROLL_CHILD] = true
 
-                                if (!snapshot.hasChild(ROLL_CHILD)) {
-                                    val vaule = ArrayList<Int>()
+                                mRollData = if (!snapshot.hasChild(ROLL_CHILD)) {
+                                    val vaule = ArrayList<RollData>()
+                                    val seed = RANDOM.nextLong()
+                                    vaule.add(RollData(START_MAX_ROLL.toLong(), 0))
                                     mRef!!.child(ROLL_CHILD).setValue(vaule)
+                                    vaule
+                                }
+                                else
+                                {
+                                    val value = snapshot.child(ROLL_CHILD).value as ArrayList<HashMap<String, Any>>
+                                    val result = ArrayList<RollData>()
+
+                                    for(entry in value)
+                                    {
+                                        result.add(RollData(entry["target"] as Long, entry["numberOfRolls"] as Long))
+                                    }
+
+                                    result
                                 }
                             }
                         })
@@ -273,7 +237,7 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
                                     START_MAX_ROLL
                                 } else {
                                     val result = snapshot.child(LEVEL_CHILD).value
-                                    result.toString().toInt()
+                                    result.toString().toLong()
                                 }
 
                                 SetTarget(target)
@@ -288,7 +252,7 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
                             override fun onDataChange(snapshot: DataSnapshot) {
                                 mLoaded[COMBO_CHILD] = true
 
-                                mMaxCombo = if (!snapshot.hasChild(COMBO_CHILD)) {
+                                maxCombo = if (!snapshot.hasChild(COMBO_CHILD)) {
                                     mRef!!.child(COMBO_CHILD).setValue(0)
                                     0
                                 } else {
@@ -316,7 +280,6 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
                             }
                         })
 
-
                 } else {
                     // If sign in fails, display a message to the user.
                     Log.w(TAG, "signInWithCredential:failure", task.exception)
@@ -324,12 +287,16 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
             }
     }
 
-    private fun replaceFragment(fragment: Fragment) {
-        mFragmentStack = Stack()
-        val transaction = mFragmentManager.beginTransaction()
-        transaction.replace(R.id.main_frame, fragment)
-        mFragmentStack.push(fragment)
-        transaction.commitAllowingStateLoss()
+    private fun replaceFragment(newFragment: Fragment) {
+        val fragmentManager = supportFragmentManager
+
+        val transaction = fragmentManager.beginTransaction()
+        transaction.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
+
+        mActiveFragment = newFragment
+        transaction.replace(R.id.main_frame, newFragment)
+        transaction.addToBackStack(null)
+        transaction.commit()
     }
 
     private fun getLocation() {
@@ -338,7 +305,6 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 
         val locationListener = object : LocationListener {
             override fun onLocationChanged(location: Location?) {
-
                 if (mLastLocation == null) {
                     mLastLocation = location
                 }
@@ -394,44 +360,54 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
         mViewHolder.porgressBar.progress = percentDone
     }
 
-    private fun SetTarget(value: Int) {
-        mMaxRoll = value
-        mViewHolder.rollTarget.text = getString(R.string.target_title, mMaxRoll)
+    private fun SetTarget(value: Long) {
+        maxRoll = value
+
+        if(mActiveFragment is MainFragment)
+        {
+            (mActiveFragment as MainFragment).updateTargetText(maxRoll)
+        }
     }
 
-    private fun updateCombo(nextRoll: Int) {
+    private fun updateCombo(nextRoll: Long) {
 
-        if (nextRoll > mLastRoll) {
-            mComboNum++
+        if (nextRoll > lastRoll) {
+            comboNum++
 
-            if(mComboNum > mMaxCombo)
+            if(comboNum > maxCombo)
             {
-                mRef!!.child(COMBO_CHILD).setValue(mComboNum)
+                mRef!!.child(COMBO_CHILD).setValue(comboNum)
 
-                Toast.makeText(this, getString(R.string.combo_broken_message, mMaxCombo, mComboNum), Toast.LENGTH_LONG).show()
+                Toast.makeText(this, getString(R.string.combo_broken_message, maxCombo, comboNum), Toast.LENGTH_LONG).show()
 
-                mMaxCombo = mComboNum
+                maxCombo = comboNum
             }
 
         } else {
-            mComboNum = 1
+            comboNum = 1
         }
 
-        mViewHolder.rollCombo.text = getString(R.string.combo_title, mComboNum)
+        if(mActiveFragment is MainFragment)
+        {
+            (mActiveFragment as MainFragment).updateComboText(comboNum)
+        }
+
     }
 
     private fun addRollToDatabase() {
-        while (!mRollsToPush.empty()) {
-            mRef!!.child(ROLL_CHILD).push().setValue(mRollsToPush.pop())
-        }
+        mRollData[mRollData.size - 1].numberOfRolls += mRollsToPush.size.toLong()
+        mRollsToPush.clear()
+        mRef!!.child(ROLL_CHILD).setValue(mRollData)
     }
 
     private fun sucessfullRoll() {
-        Toast.makeText(this, getString(R.string.rolled_max_contents, mLastRoll), Toast.LENGTH_LONG).show()
+        Toast.makeText(this, getString(R.string.rolled_max_contents, lastRoll), Toast.LENGTH_LONG).show()
 
-        SetTarget(mMaxRoll * 10)
+        SetTarget(maxRoll * 10)
 
-        mRef!!.child(LEVEL_CHILD).setValue(mMaxRoll)
+        mRef!!.child(LEVEL_CHILD).setValue(maxRoll)
+
+        mRollData.add(RollData(maxRoll, 0))
     }
 
     private fun vibrate()
@@ -457,8 +433,6 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 
     }
 
-    private fun IntRange.random() = Random().nextInt((endInclusive + 1) - start) + start
-
     private fun roll()
     {
         vibrate()
@@ -469,44 +443,49 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 
         updateCombo(nextRoll)
 
-        mLastRoll = nextRoll
+        lastRoll = nextRoll
 
-        Log.i(TAG, "Rolled $mLastRoll")
-
-        mRollsToPush.push(mLastRoll)
+        mRollsToPush.push(lastRoll)
 
         addRollToDatabase()
 
-        if(mLastRoll == mMaxRoll)
+        if(lastRoll == maxRoll)
         {
             sucessfullRoll()
         }
     }
 
-    private fun startDiceRollAnimation() : Int
+    private fun startDiceRollAnimation() : Long
     {
-        val tempList = ArrayList<Int>()
+        val tempList = ArrayList<Long>()
+
+        animeRollStack.clear()
 
         for(i in 0 until ANIMATION_COUNT - 1)
         {
-            tempList.add(((MIN_ROLL .. mMaxRoll).random()))
-            mAnimeRollStack.push(tempList.last())
+            val randomNumber = JavaUtils.nextLong (MIN_ROLL, maxRoll + 1, RANDOM)
+            tempList.add(randomNumber)
+            animeRollStack.push(tempList.last())
         }
 
         return tempList[0]
     }
 
     companion object {
-        private const val PERMISSION_REQUEST_ACCESS_FINE_LOCATION = 100
-        private const val TAG = "ROLL_WALKER"
+        val RANDOM = Random()
+
+        const val TAG = "ROLL_WALKER"
+        const val ROLL_CHILD = "rolls"
+        const val LEVEL_CHILD = "level"
+        const val COMBO_CHILD = "combo"
+        const val PROGRESS_CHILD = "progress"
+        const val SEED_CHILD = "seed"
+
         private const val DISTANCE_BETWEEN_ROLLS = 2
-        private const val MIN_ROLL = 1
-        private const val START_MAX_ROLL = 10
-        private const val ANIMATION_COUNT = 25
+        private const val MIN_ROLL = 1L
+        private const val START_MAX_ROLL = 10L
+        private const val ANIMATION_COUNT = 100
         private const val RC_SIGN_IN = 9001
-        private const val ROLL_CHILD = "rolls"
-        private const val LEVEL_CHILD = "level"
-        private const val COMBO_CHILD = "combo"
-        private const val PROGRESS_CHILD = "progress"
+        private const val PERMISSION_REQUEST_ACCESS_FINE_LOCATION = 100
     }
 }
