@@ -79,10 +79,11 @@ class MainFragment : Fragment() {
             private var mAnimeUpdate = 0L
             private var mNextIncremnet = 0.1
             private var mPrevColour: Int = 0
+            private var mTime: Long = 0
 
             override fun run()
             {
-                val now = System.currentTimeMillis();
+                mTime += 30
 
                 if (!main.animeRollStack.empty()) {
                     if(main.animeRollStack.size == Main.ANIMATION_COUNT)
@@ -91,7 +92,7 @@ class MainFragment : Fragment() {
                         mViewHolder.rollLayout.startAnimation(animShake)
                     }
 
-                    if (now > mAnimeUpdate) {
+                    if (mTime > mAnimeUpdate) {
 
                         val next = main.animeRollStack.pop().toString()
                         mViewHolder.animeRollResult.text = next
@@ -110,7 +111,7 @@ class MainFragment : Fragment() {
 
                         mViewHolder.rollResult.text = next
 
-                        mAnimeUpdate = now + mNextIncremnet.toLong()
+                        mAnimeUpdate = mTime + mNextIncremnet.toLong()
 
 
                         if(main.animeRollStack.size > 25)
@@ -130,7 +131,7 @@ class MainFragment : Fragment() {
                             mNextIncremnet += 100
                         }
 
-                        Log.w(Main.TAG, "Now:$now NextTime:$mNextIncremnet StackSize:${main.animeRollStack.size} NextVaule:$next")
+                        Log.w(Main.TAG, "Now:$mTime NextTime:$mNextIncremnet StackSize:${main.animeRollStack.size} NextVaule:$next")
                     }
 
                     if(main.animeRollStack.size == 0)

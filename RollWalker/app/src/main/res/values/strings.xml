@@ -16,4 +16,6 @@
     <string name="result_num_of_rolls">Rolls %d</string>
     <string name="result_distance_travled_title">Traveled %s</string>
     <string name="result_title">HALL OF HISTORY</string>
+    <string name="notifaction_sucess_title">TARGET UPDATE</string>
+    <string name="notifaction_sucess_content">You have achieved your target %d</string>
 </resources>

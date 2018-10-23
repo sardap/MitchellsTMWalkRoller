@@ -3,6 +3,9 @@ package com.mitchellsideas.pfsar.rollwalker
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -14,6 +17,7 @@ import android.support.v7.app.AppCompatActivity
 import android.support.v4.app.ActivityCompat
 import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentManager
+import android.support.v4.app.NotificationCompat
 import android.support.v4.content.ContextCompat
 import android.util.Log
 import android.view.*
@@ -31,6 +35,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.common.api.ApiException
+import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.database.*
 import kotlin.collections.ArrayList
@@ -62,10 +67,14 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
     private val mLoaded = hashMapOf(ROLL_CHILD to false, LEVEL_CHILD to false, COMBO_CHILD to false, PROGRESS_CHILD to false, SEED_CHILD to true)
     private lateinit var mViewHolder: ViewHolder
     private lateinit var mRollData: ArrayList<RollData>
+    private lateinit var mFirebaseAnalytics: FirebaseAnalytics
+    private var mActivityVisible: Boolean = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this)
 
         replaceFragment(MainFragment())
 
@@ -89,13 +98,17 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
         initlise()
     }
 
-    override fun onStart() {
-        super.onStart()
+    override fun onPause() {
+        super.onPause()
+        mActivityVisible = false
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
+    override fun onResume() {
+        super.onResume()
+        mActivityVisible = true
     }
+
+
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
@@ -166,15 +179,6 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
             else -> super.onOptionsItemSelected(item)
         }
     }
-
-    override fun onResume() {
-        super.onResume()
-
-        mInit += System.currentTimeMillis()
-    }
-
-    var mInit : Long = 0
-
 
     private fun initlise() {
     }
@@ -362,12 +366,14 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
         locationManager!!.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0L, 0f, locationListener)
     }
 
-    private fun updateProgressBar() {
+    private fun updateProgressBar()
+    {
         val percentDone = Math.round(mDistanceTraveledSinceRoll / DISTANCE_BETWEEN_ROLLS * 100).toInt()
         mViewHolder.porgressBar.progress = percentDone
     }
 
-    private fun SetTarget(value: Long) {
+    private fun SetTarget(value: Long)
+    {
         maxRoll = value
 
         if(mActiveFragment is MainFragment)
@@ -376,7 +382,8 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
-    private fun updateCombo(nextRoll: Long) {
+    private fun updateCombo(nextRoll: Long)
+    {
 
         if (nextRoll > lastRoll) {
             comboNum++
@@ -401,18 +408,50 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 
     }
 
-    private fun addRollToDatabase() {
+    private fun addRollToDatabase()
+    {
         mRef!!.child(ROLL_CHILD).setValue(mRollData)
     }
 
+    private fun showNotification(title: String, content: String)
+    {
+        if(!mActivityVisible)
+        {
+            val mNotificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                val channel = NotificationChannel("default", CHANNEL_NAME, NotificationManager.IMPORTANCE_DEFAULT)
+                channel.description = "YOUR_NOTIFICATION_CHANNEL_DISCRIPTION"
+
+                mNotificationManager.createNotificationChannel(channel);
+            }
+
+            val mBuilder = NotificationCompat.Builder(applicationContext, "default")
+                .setSmallIcon(R.mipmap.ic_launcher) // notification icon
+                .setContentTitle(title) // title for notification
+                .setContentText(content)// message for notification
+                //.setSound(alarmSound) // set alarm sound for notification
+                .setAutoCancel(true) // clear notification after click
+
+            val intent = Intent(applicationContext, Main::class.java)
+            val pi = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+            mBuilder.setContentIntent(pi)
+            mNotificationManager.notify(0, mBuilder.build())
+        }
+    }
+
+
     private fun sucessfullRoll() {
         Toast.makeText(this, getString(R.string.rolled_max_contents, lastRoll), Toast.LENGTH_LONG).show()
+
+        showNotification(getString(R.string.notifaction_sucess_title), getString(R.string.notifaction_sucess_content, maxRoll))
 
         SetTarget(maxRoll * 10)
 
         mRef!!.child(LEVEL_CHILD).setValue(maxRoll)
 
         mRollData.add(RollData(maxRoll, 0.0))
+
     }
 
     private fun vibrate()
@@ -440,7 +479,8 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 
     private fun roll()
     {
-        vibrate()
+        if(!mActivityVisible)
+            vibrate()
 
         mDistanceTraveledSinceRoll = 0.0
 
@@ -485,6 +525,7 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
         const val SEED_CHILD = "seed"
         const val DISTANCE_BETWEEN_ROLLS = 1
         const val ANIMATION_COUNT = 25
+        const val CHANNEL_NAME = "ROLL_WALKER"
 
         private const val MIN_ROLL = 1L
         private const val START_MAX_ROLL = 10L
