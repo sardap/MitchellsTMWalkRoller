@@ -464,7 +464,7 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 
         animeRollStack.clear()
 
-        for(i in 0 until ANIMATION_COUNT - 1)
+        for(i in 0 until ANIMATION_COUNT)
         {
             val randomNumber = JavaUtils.nextLong (MIN_ROLL, maxRoll + 1, RANDOM)
             tempList.add(randomNumber)
@@ -484,10 +484,10 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
         const val PROGRESS_CHILD = "progress"
         const val SEED_CHILD = "seed"
         const val DISTANCE_BETWEEN_ROLLS = 1
+        const val ANIMATION_COUNT = 25
 
         private const val MIN_ROLL = 1L
         private const val START_MAX_ROLL = 10L
-        private const val ANIMATION_COUNT = 25
         private const val RC_SIGN_IN = 9001
         private const val PERMISSION_REQUEST_ACCESS_FINE_LOCATION = 100
     }
