@@ -517,7 +517,7 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 
     private fun roll()
     {
-        if(mActivityVisible)
+        if(!(mActivityVisible && !settings.notifcationEveryRoll))
             vibrate()
 
         mDistanceTraveledSinceRoll = 0.0
