@@ -31,8 +31,20 @@
     />
 
     <TextView
-            android:id="@+id/distance_traveled"
+            android:id="@+id/combo"
             android:layout_below="@id/num_of_rolls"
+            android:paddingStart="15sp"
+            android:paddingEnd="15sp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/textNormal"
+            android:textSize="30sp"
+            android:text="@string/result_combo"
+    />
+
+    <TextView
+            android:id="@+id/distance_traveled"
+            android:layout_below="@id/combo"
             android:paddingStart="15sp"
             android:paddingEnd="15sp"
             android:layout_width="wrap_content"

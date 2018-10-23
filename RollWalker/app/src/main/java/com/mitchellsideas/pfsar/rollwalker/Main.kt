@@ -387,7 +387,6 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 
                 if(mLoaded.all { it.value })
                 {
-                    mRollData.last().distance += distance
                     tryRoll()
                     mRef!!.child(PROGRESS_CHILD).setValue(mDistanceTraveledSinceRoll)
                 }
@@ -508,7 +507,8 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
         Log.i(TAG, "Travaled $mDistanceTraveledSinceRoll")
 
         if (mDistanceTraveledSinceRoll > DISTANCE_BETWEEN_ROLLS) {
-            roll()
+			mRollData.last().distance += DISTANCE_BETWEEN_ROLLS
+			roll()
         }
 
         updateProgressBar()
