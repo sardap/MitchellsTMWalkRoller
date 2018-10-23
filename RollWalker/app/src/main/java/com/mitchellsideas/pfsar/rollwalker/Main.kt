@@ -134,11 +134,14 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
     }
 
 
-    @SuppressLint("MissingPermission")
     override fun onMapReady(googleMap: GoogleMap) {
         //TODO Fix this shit on first start
         mMap = googleMap
-        mMap.setMyLocationEnabled(true);
+
+        if(ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION ) == PackageManager.PERMISSION_GRANTED )
+        {
+            mMap.isMyLocationEnabled = true
+        }
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
