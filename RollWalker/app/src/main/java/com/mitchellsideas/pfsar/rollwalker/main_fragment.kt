@@ -1,4 +1,4 @@
-package com.example.pfsar.rollwalker
+package com.mitchellsideas.pfsar.rollwalker
 
 import android.graphics.Color
 import android.os.Bundle
@@ -9,7 +9,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import com.google.firebase.database.collection.LLRBNode
 import java.util.*
 
 class MainFragment : Fragment() {

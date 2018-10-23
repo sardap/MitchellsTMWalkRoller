@@ -1,4 +1,4 @@
-package com.example.pfsar.rollwalker
+package com.mitchellsideas.pfsar.rollwalker
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -483,11 +483,11 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
         const val COMBO_CHILD = "combo"
         const val PROGRESS_CHILD = "progress"
         const val SEED_CHILD = "seed"
-        const val DISTANCE_BETWEEN_ROLLS = 2
+        const val DISTANCE_BETWEEN_ROLLS = 1
 
         private const val MIN_ROLL = 1L
         private const val START_MAX_ROLL = 10L
-        private const val ANIMATION_COUNT = 500
+        private const val ANIMATION_COUNT = 25
         private const val RC_SIGN_IN = 9001
         private const val PERMISSION_REQUEST_ACCESS_FINE_LOCATION = 100
     }

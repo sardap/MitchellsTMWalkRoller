@@ -1,4 +1,4 @@
-package com.example.pfsar.rollwalker
+package com.mitchellsideas.pfsar.rollwalker
 
 import android.app.Activity
 import android.os.Bundle
@@ -14,10 +14,6 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.ChildEventListener
-
-
-
-
 
 class LastRollFragment : Fragment() {
 
@@ -45,8 +41,8 @@ class LastRollFragment : Fragment() {
 
         fun distanceToString(pDistance: Double) : String
         {
-            var extension: String
-            var value: Double
+            val extension: String
+            val value: Double
 
             if(pDistance > 1000)
             {
@@ -138,39 +134,4 @@ class LastRollFragment : Fragment() {
         return result as Array<Entry>
     }
 
-    private fun setUpRecyclerView()
-    {
-        val query = FirebaseDatabase.getInstance()
-            .reference
-            .child(FirebaseAuth.getInstance().currentUser!!.uid)
-            .child(Main.ROLL_CHILD)
-            .limitToLast(50)
-
-        val childEventListener = object : ChildEventListener {
-            override fun onChildAdded(dataSnapshot: DataSnapshot, previousChildName: String?) {
-                // ...
-            }
-
-            override fun onChildChanged(dataSnapshot: DataSnapshot, previousChildName: String?) {
-                // ...
-            }
-
-            override fun onChildRemoved(dataSnapshot: DataSnapshot) {
-                // ...
-            }
-
-            override fun onChildMoved(dataSnapshot: DataSnapshot, previousChildName: String?) {
-                // ...
-            }
-
-            override fun onCancelled(databaseError: DatabaseError) {
-                // ...
-            }
-        }
-
-        query.addChildEventListener(childEventListener)
-
-
-
-    }
 }

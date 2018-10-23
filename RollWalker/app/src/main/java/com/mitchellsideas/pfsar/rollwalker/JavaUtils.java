@@ -1,4 +1,4 @@
-package com.example.pfsar.rollwalker;
+package com.mitchellsideas.pfsar.rollwalker;
 
 import java.util.Random;
 

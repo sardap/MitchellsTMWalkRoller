@@ -1,4 +1,4 @@
-package com.example.pfsar.rollwalker
+package com.mitchellsideas.pfsar.rollwalker
 
 import android.support.test.InstrumentationRegistry
 import android.support.test.runner.AndroidJUnit4
