@@ -40,6 +40,7 @@ class MainFragment : Fragment() {
     }
 
     private lateinit var mViewHolder: ViewHolder
+    private var mVisable: Boolean = false
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.main_fragment, container, false)
@@ -52,6 +53,16 @@ class MainFragment : Fragment() {
     override fun onStart() {
         super.onStart()
         initlise(activity as Main)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        mVisable = true
+    }
+
+    override fun onPause() {
+        super.onPause()
+        mVisable = false
     }
 
     fun updateComboText(combo: Long)
@@ -134,14 +145,17 @@ class MainFragment : Fragment() {
                             }
 
                             Log.w(Main.TAG, "Now:$mTime NextTime:$mNextIncremnet StackSize:${main.animeRollStack.size} NextVaule:$next")
-                        }
 
-                        if(main.animeRollStack.size == 0)
-                        {
-                            mNextIncremnet = 0.0
-                            mAnimeUpdate = 0
-                            mViewHolder.animeRollResult.setTextColor(Color.RED)
-                            mViewHolder.rollLayout.clearAnimation()
+                            if(main.animeRollStack.size == 0)
+                            {
+                                mNextIncremnet = 0.0
+                                mAnimeUpdate = 0
+                                mViewHolder.animeRollResult.setTextColor(Color.RED)
+                                mViewHolder.rollLayout.clearAnimation()
+
+                                if(showRollNotifacation(main))
+                                    main.showNotification(getString(R.string.notifaction_roll_title), getString(R.string.notifaction_roll_content, next))
+                            }
                         }
                     }
                 }
@@ -157,6 +171,9 @@ class MainFragment : Fragment() {
                         mViewHolder.rollResult.text = result.toString()
                         mViewHolder.animeRollResult.text = result.toString()
                         mViewHolder.animeRollResult.setTextColor(Color.RED)
+
+                        if(showRollNotifacation(main))
+                            main.showNotification(getString(R.string.notifaction_roll_title), getString(R.string.notifaction_roll_content, result.toString()))
                     }
                 }
 
@@ -165,6 +182,9 @@ class MainFragment : Fragment() {
         }
 
         handler.post(updater)
+    }
 
+    private fun showRollNotifacation(main: Main): Boolean {
+        return !mVisable && main.settings.notifcationEveryRoll
     }
 }

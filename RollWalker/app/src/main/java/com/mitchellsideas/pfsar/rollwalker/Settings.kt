@@ -2,10 +2,7 @@ package com.mitchellsideas.pfsar.rollwalker
 
 class Settings {
 
-	var rollAnimation: Boolean
+	var rollAnimation: Boolean = true
+	var notifcationEveryRoll: Boolean = false
 
-	constructor(pRollAnim: Boolean)
-	{
-		rollAnimation = pRollAnim
-	}
 }

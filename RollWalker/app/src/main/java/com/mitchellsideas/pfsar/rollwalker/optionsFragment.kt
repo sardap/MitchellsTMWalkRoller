@@ -23,9 +23,11 @@ class optionsFragment : Fragment() {
 		}
 
 		private fun poplauteEntryArray(optionsFragment: optionsFragment, activity: Activity): Array<Entry> {
-			val result = Array<Entry?>(1){null}
+			val result = Array<Entry?>(2){null}
+			val main = (activity as Main)
 
-			result[0] = EntrySwitch(activity.getString(R.string.options_disable_animation), (activity as Main).settings.rollAnimation, optionsFragment::switchRollAnimation)
+			result[0] = EntrySwitch(activity.getString(R.string.options_disable_animation), main.settings.rollAnimation, optionsFragment::switchRollAnimation)
+			result[1] = EntrySwitch(activity.getString(R.string.options_notifacation_every_roll), main.settings.notifcationEveryRoll, optionsFragment::switchRollNotifaction)
 
 			return result as Array<Entry>
 		}
@@ -133,7 +135,11 @@ class optionsFragment : Fragment() {
 
 	private fun switchRollAnimation(): Boolean {
 		mMain.settings.rollAnimation = !mMain.settings.rollAnimation
+		return true
+	}
 
+	private fun switchRollNotifaction(): Boolean {
+		mMain.settings.notifcationEveryRoll = !mMain.settings.notifcationEveryRoll
 		return true
 	}
 }

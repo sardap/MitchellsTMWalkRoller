@@ -11,9 +11,9 @@ android {
         applicationId "com.mitchellsideas.pfsar.rollwalker"
         minSdkVersion 24
         targetSdkVersion 28
-        versionName '1'
+        versionName 'Alpha 1.1'
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-        versionCode 1
+        versionCode 11
     }
     buildTypes {
         release {
@@ -39,4 +39,9 @@ dependencies {
     implementation 'com.android.support:recyclerview-v7:28.0.0'
     implementation 'com.google.android.gms:play-services-auth:16.0.0'
     implementation 'com.google.firebase:firebase-core:16.0.0'
+    implementation (
+            [group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.4.1'],
+            [group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version: '2.4.1'],
+            [group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.4.1']
+    )
 }

@@ -54,7 +54,7 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
     var comboNum = 0L
     var maxCombo = 0L
     var lastRoll = 0L
-	var settings = Settings(true)
+	var settings = Settings()
 
     private lateinit var mMap: GoogleMap
     private lateinit var mFragmentManager: FragmentManager
@@ -135,7 +135,6 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 
 
     override fun onMapReady(googleMap: GoogleMap) {
-        //TODO Fix this shit on first start
         mMap = googleMap
 
         if(ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION ) == PackageManager.PERMISSION_GRANTED )
@@ -194,6 +193,31 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 			}
             else -> super.onOptionsItemSelected(item)
         }
+    }
+
+    fun showNotification(title: String, content: String)
+    {
+
+		val mNotificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+			val channel = NotificationChannel("default", CHANNEL_NAME, NotificationManager.IMPORTANCE_DEFAULT)
+			channel.description = "YOUR_NOTIFICATION_CHANNEL_DISCRIPTION"
+
+			mNotificationManager.createNotificationChannel(channel);
+		}
+
+		val mBuilder = NotificationCompat.Builder(applicationContext, "default")
+			.setSmallIcon(R.mipmap.ic_launcher) // notification icon
+			.setContentTitle(title) // title for notification
+			.setContentText(content)// message for notification
+			//.setSound(alarmSound) // set alarm sound for notification
+			.setAutoCancel(true) // clear notification after click
+
+		val intent = Intent(applicationContext, Main::class.java)
+		val pi = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+		mBuilder.setContentIntent(pi)
+		mNotificationManager.notify(0, mBuilder.build())
     }
 
     private fun initlise() {
@@ -312,12 +336,11 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 
                             override fun onDataChange(snapshot: DataSnapshot) {
 								settings = if (!snapshot.hasChild(SETTINGS_CHILD)) {
-									val result = Settings(true)
+									val result = Settings()
                                     mRef!!.child(SETTINGS_CHILD).setValue(result)
 									result
                                 } else {
-                                    val result = snapshot.child(SETTINGS_CHILD).value as HashMap<String, Any>
-									Settings(result["rollAnimation"] as Boolean)
+                                    FirebaseUtilsJava.deserialize(snapshot.child(SETTINGS_CHILD), Settings::class.java)
                                 }
                             }
                         })
@@ -453,38 +476,11 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
         mRef!!.child(ROLL_CHILD).setValue(mRollData)
     }
 
-    private fun showNotification(title: String, content: String)
-    {
-        if(!mActivityVisible)
-        {
-            val mNotificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                val channel = NotificationChannel("default", CHANNEL_NAME, NotificationManager.IMPORTANCE_DEFAULT)
-                channel.description = "YOUR_NOTIFICATION_CHANNEL_DISCRIPTION"
-
-                mNotificationManager.createNotificationChannel(channel);
-            }
-
-            val mBuilder = NotificationCompat.Builder(applicationContext, "default")
-                .setSmallIcon(R.mipmap.ic_launcher) // notification icon
-                .setContentTitle(title) // title for notification
-                .setContentText(content)// message for notification
-                //.setSound(alarmSound) // set alarm sound for notification
-                .setAutoCancel(true) // clear notification after click
-
-            val intent = Intent(applicationContext, Main::class.java)
-            val pi = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT)
-            mBuilder.setContentIntent(pi)
-            mNotificationManager.notify(0, mBuilder.build())
-        }
-    }
-
-
     private fun sucessfullRoll() {
         Toast.makeText(this, getString(R.string.rolled_max_contents, lastRoll), Toast.LENGTH_LONG).show()
 
-        showNotification(getString(R.string.notifaction_sucess_title), getString(R.string.notifaction_sucess_content, maxRoll))
+		if(!mActivityVisible)
+			showNotification(getString(R.string.notifaction_sucess_title), getString(R.string.notifaction_sucess_content, maxRoll))
 
         comboNum = 0
 
