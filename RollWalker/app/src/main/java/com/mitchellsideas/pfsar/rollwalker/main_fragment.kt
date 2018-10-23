@@ -85,61 +85,78 @@ class MainFragment : Fragment() {
             {
                 mTime += 30
 
-                if (!main.animeRollStack.empty()) {
-                    if(main.animeRollStack.size == Main.ANIMATION_COUNT)
-                    {
-                        val animShake = AnimationUtils.loadAnimation(activity, R.anim.shake)
-                        mViewHolder.rollLayout.startAnimation(animShake)
+                if(main.settings.rollAnimation)
+                {
+                    if (!main.animeRollStack.empty()) {
+                        if(main.animeRollStack.size == Main.ANIMATION_COUNT)
+                        {
+                            val animShake = AnimationUtils.loadAnimation(activity, R.anim.shake)
+                            mViewHolder.rollLayout.startAnimation(animShake)
+                        }
+
+                        if (mTime > mAnimeUpdate) {
+
+                            val next = main.animeRollStack.pop().toString()
+                            mViewHolder.animeRollResult.text = next
+
+                            var nextColour: Int
+
+                            do
+                            {
+                                nextColour = Utils.randomValue(COLOURS_LIST)
+                            } while (mPrevColour == nextColour)
+
+                            mPrevColour = nextColour
+
+                            mViewHolder.animeRollResult.setTextColor(nextColour)
+
+
+                            mViewHolder.rollResult.text = next
+
+                            mAnimeUpdate = mTime + mNextIncremnet.toLong()
+
+
+                            if(main.animeRollStack.size > 25)
+                            {
+                                mNextIncremnet += 0.10
+                            }
+                            else if(main.animeRollStack.size > 15)
+                            {
+                                mNextIncremnet = 50.0
+                            }
+                            else if(mNextIncremnet > 5)
+                            {
+                                mNextIncremnet += 40
+                            }
+                            else
+                            {
+                                mNextIncremnet += 100
+                            }
+
+                            Log.w(Main.TAG, "Now:$mTime NextTime:$mNextIncremnet StackSize:${main.animeRollStack.size} NextVaule:$next")
+                        }
+
+                        if(main.animeRollStack.size == 0)
+                        {
+                            mNextIncremnet = 0.0
+                            mAnimeUpdate = 0
+                            mViewHolder.animeRollResult.setTextColor(Color.RED)
+                            mViewHolder.rollLayout.clearAnimation()
+                        }
                     }
+                }
+                else
+                {
+                    if(!main.animeRollStack.empty()) {
+                        var result: Long = 0
 
-                    if (mTime > mAnimeUpdate) {
-
-                        val next = main.animeRollStack.pop().toString()
-                        mViewHolder.animeRollResult.text = next
-
-                        var nextColour: Int
-
-                        do
-                        {
-                            nextColour = Utils.randomValue(COLOURS_LIST)
-                        } while (mPrevColour == nextColour)
-
-                        mPrevColour = nextColour
-
-                        mViewHolder.animeRollResult.setTextColor(nextColour)
-
-
-                        mViewHolder.rollResult.text = next
-
-                        mAnimeUpdate = mTime + mNextIncremnet.toLong()
-
-
-                        if(main.animeRollStack.size > 25)
-                        {
-                            mNextIncremnet += 0.10
-                        }
-                        else if(main.animeRollStack.size > 15)
-                        {
-                            mNextIncremnet = 50.0
-                        }
-                        else if(mNextIncremnet > 5)
-                        {
-                            mNextIncremnet += 40
-                        }
-                        else
-                        {
-                            mNextIncremnet += 100
+                        while (!main.animeRollStack.empty()) {
+                            result = main.animeRollStack.pop()
                         }
 
-                        Log.w(Main.TAG, "Now:$mTime NextTime:$mNextIncremnet StackSize:${main.animeRollStack.size} NextVaule:$next")
-                    }
-
-                    if(main.animeRollStack.size == 0)
-                    {
-                        mNextIncremnet = 0.0
-                        mAnimeUpdate = 0
+                        mViewHolder.rollResult.text = result.toString()
+                        mViewHolder.animeRollResult.text = result.toString()
                         mViewHolder.animeRollResult.setTextColor(Color.RED)
-                        mViewHolder.rollLayout.clearAnimation()
                     }
                 }
 

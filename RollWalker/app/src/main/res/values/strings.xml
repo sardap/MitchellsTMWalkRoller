@@ -5,6 +5,7 @@
     <string name="roll_result_defualt"> %d </string>
     <string name="main_menu_option"> main screen </string>
     <string name="see_last_rolls"> Prevouis rolls </string>
+    <string name="menu_options"> Options </string>
     <string name="roll">roll:</string>
     <string name="rolled_max_title">YOU FUCKING DID IT</string>
     <string name="rolled_max_contents">YOU FUCKING DID IT YOU ROLLED %d LEVEL UP</string>
@@ -18,4 +19,7 @@
     <string name="result_title">HALL OF HISTORY</string>
     <string name="notifaction_sucess_title">TARGET UPDATE</string>
     <string name="notifaction_sucess_content">You have achieved your target %d</string>
+
+    <string name="options_disable_animation">Animation Enabled </string>
+
 </resources>

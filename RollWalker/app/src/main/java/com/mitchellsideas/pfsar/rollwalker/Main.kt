@@ -54,6 +54,7 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
     var comboNum = 0L
     var maxCombo = 0L
     var lastRoll = 0L
+	var settings = Settings(true)
 
     private lateinit var mMap: GoogleMap
     private lateinit var mFragmentManager: FragmentManager
@@ -64,7 +65,7 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var auth: FirebaseAuth
     private var mUser: FirebaseUser? = null
     private var mRef: DatabaseReference? = null
-    private val mLoaded = hashMapOf(ROLL_CHILD to false, LEVEL_CHILD to false, COMBO_CHILD to false, PROGRESS_CHILD to false, SEED_CHILD to true)
+    private val mLoaded = hashMapOf(ROLL_CHILD to false, LEVEL_CHILD to false, COMBO_CHILD to false, PROGRESS_CHILD to false)
     private lateinit var mViewHolder: ViewHolder
     private lateinit var mRollData: ArrayList<RollData>
     private lateinit var mFirebaseAnalytics: FirebaseAnalytics
@@ -109,6 +110,10 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
     }
 
 
+    override fun onStop() {
+        super.onStop()
+        mRef!!.child(SETTINGS_CHILD).setValue(settings)
+    }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
@@ -131,6 +136,7 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 
     @SuppressLint("MissingPermission")
     override fun onMapReady(googleMap: GoogleMap) {
+        //TODO Fix this shit on first start
         mMap = googleMap
         mMap.setMyLocationEnabled(true);
     }
@@ -172,10 +178,17 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
                     {
                         Toast.makeText(applicationContext, "Not ready yet!", Toast.LENGTH_SHORT).show()
                     }
-
                 }
                 true
             }
+			R.id.menu_options -> {
+				if(mActiveFragment !is optionsFragment)
+				{
+					replaceFragment(optionsFragment.newInstance(this, this))
+				}
+
+				true
+			}
             else -> super.onOptionsItemSelected(item)
         }
     }
@@ -224,7 +237,7 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 
                                     for(entry in value)
                                     {
-                                        result.add(RollData(entry["target"] as Long, entry["distance"] as Double, entry["bestCombo"] as Long))
+                                        result.add(RollData(entry["target"].toString().toLong(), entry["distance"].toString().toDouble(), entry["bestCombo"].toString().toLong()))
                                     }
 
                                     result
@@ -279,7 +292,7 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
                                 mLoaded[PROGRESS_CHILD] = true
 
                                 mDistanceTraveledSinceRoll = if (!snapshot.hasChild(PROGRESS_CHILD)) {
-                                    mRef!!.child(PROGRESS_CHILD).setValue(0)
+                                    mRef!!.child(PROGRESS_CHILD).setValue(0.0)
                                     0.0
                                 } else {
                                     val result = snapshot.child(PROGRESS_CHILD).value
@@ -287,6 +300,26 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
                                 }
                             }
                         })
+
+
+                    mRef!!.addListenerForSingleValueEvent(
+                        object : ValueEventListener {
+                            override fun onCancelled(p0: DatabaseError) {
+                            }
+
+                            override fun onDataChange(snapshot: DataSnapshot) {
+								settings = if (!snapshot.hasChild(SETTINGS_CHILD)) {
+									val result = Settings(true)
+                                    mRef!!.child(SETTINGS_CHILD).setValue(result)
+									result
+                                } else {
+                                    val result = snapshot.child(SETTINGS_CHILD).value as HashMap<String, Any>
+									Settings(result["rollAnimation"] as Boolean)
+                                }
+                            }
+                        })
+
+
 
                 } else {
                     // If sign in fails, display a message to the user.
@@ -318,7 +351,7 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
                 }
 
                 val latitude = location!!.latitude
-                val longitude = location!!.longitude
+                val longitude = location.longitude
 
                 Log.i(Main.TAG, "Latitute: $latitude ; Longitute: $longitude")
 
@@ -527,8 +560,8 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
         const val ROLL_CHILD = "rolls"
         const val LEVEL_CHILD = "level"
         const val COMBO_CHILD = "combo"
-        const val PROGRESS_CHILD = "progress"
-        const val SEED_CHILD = "seed"
+		const val PROGRESS_CHILD = "progress"
+		const val SETTINGS_CHILD = "settings"
         const val DISTANCE_BETWEEN_ROLLS = 1
         const val ANIMATION_COUNT = 25
         const val CHANNEL_NAME = "ROLL_WALKER"

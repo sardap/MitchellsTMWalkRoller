@@ -9,4 +9,9 @@
     <item android:id="@+id/menu_see_last_rolls"
           android:title="@string/see_last_rolls"
     />
+    <item android:id="@+id/menu_options"
+          android:title="@string/menu_options"
+    />
 </menu>
+
+
