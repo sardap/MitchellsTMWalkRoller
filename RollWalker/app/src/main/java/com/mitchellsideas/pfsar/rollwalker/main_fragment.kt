@@ -54,7 +54,7 @@ class MainFragment : Fragment() {
         initlise(activity as Main)
     }
 
-    fun updateComboText(combo: Int)
+    fun updateComboText(combo: Long)
     {
         mViewHolder.rollCombo.text = getString(R.string.combo_title, combo)
     }

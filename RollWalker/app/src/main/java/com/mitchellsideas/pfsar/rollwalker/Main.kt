@@ -51,8 +51,8 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 
     var animeRollStack = Stack<Long>()
     var maxRoll = 0L
-    var comboNum = 0
-    var maxCombo = 0
+    var comboNum = 0L
+    var maxCombo = 0L
     var lastRoll = 0L
 
     private lateinit var mMap: GoogleMap
@@ -213,7 +213,7 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 
                                 mRollData = if (!snapshot.hasChild(ROLL_CHILD)) {
                                     val vaule = ArrayList<RollData>()
-                                    vaule.add(RollData(START_MAX_ROLL.toLong(), 0.0))
+                                    vaule.add(RollData(START_MAX_ROLL, 0.0, 0))
                                     mRef!!.child(ROLL_CHILD).setValue(vaule)
                                     vaule
                                 }
@@ -224,7 +224,7 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 
                                     for(entry in value)
                                     {
-                                        result.add(RollData(entry["target"] as Long, entry["distance"] as Double))
+                                        result.add(RollData(entry["target"] as Long, entry["distance"] as Double, entry["bestCombo"] as Long))
                                     }
 
                                     result
@@ -265,7 +265,7 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
                                     0
                                 } else {
                                     val result = snapshot.child(COMBO_CHILD).value
-                                    result.toString().toInt()
+                                    result.toString().toLong()
                                 }
                             }
                         })
@@ -401,11 +401,15 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
             comboNum = 1
         }
 
+        if(comboNum > mRollData.last().bestCombo)
+        {
+            mRollData.last().bestCombo = comboNum
+        }
+
         if(mActiveFragment is MainFragment)
         {
             (mActiveFragment as MainFragment).updateComboText(comboNum)
         }
-
     }
 
     private fun addRollToDatabase()
@@ -446,11 +450,13 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 
         showNotification(getString(R.string.notifaction_sucess_title), getString(R.string.notifaction_sucess_content, maxRoll))
 
+        comboNum = 0
+
         SetTarget(maxRoll * 10)
 
         mRef!!.child(LEVEL_CHILD).setValue(maxRoll)
 
-        mRollData.add(RollData(maxRoll, 0.0))
+        mRollData.add(RollData(maxRoll, 0.0, 0))
 
     }
 
