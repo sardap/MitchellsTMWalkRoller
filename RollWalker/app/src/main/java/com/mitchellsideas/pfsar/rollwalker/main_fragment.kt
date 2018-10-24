@@ -109,7 +109,6 @@ class MainFragment : Fragment() {
 			private var mPrevColour: Int = 0
 
 			override fun onAnimationStart(animation: Animation?) {
-				val x = 0
 			}
 
 			override fun onAnimationEnd(animation: Animation?) {
