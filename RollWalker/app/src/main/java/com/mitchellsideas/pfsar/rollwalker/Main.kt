@@ -237,8 +237,6 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 		comboNum = 0L
 		maxCombo = 0L
 		lastRoll = 0L
-
-
     }
 
     private fun signIn() {
@@ -368,8 +366,6 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
             {
                 mRef!!.child(COMBO_CHILD).setValue(comboNum)
 
-                Toast.makeText(this, getString(R.string.combo_broken_message, maxCombo, comboNum), Toast.LENGTH_LONG).show()
-
                 maxCombo = comboNum
             }
 
@@ -394,7 +390,8 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun sucessfullRoll() {
-        Toast.makeText(this, getString(R.string.rolled_max_contents, lastRoll), Toast.LENGTH_LONG).show()
+		if(mActiveFragment !is MainFragment)
+        	Toast.makeText(this, getString(R.string.rolled_max_contents, lastRoll), Toast.LENGTH_LONG).show()
 
 		if(!mActivityVisible)
 			showNotification(getString(R.string.notifaction_sucess_title), getString(R.string.notifaction_sucess_content, maxRoll))
@@ -405,7 +402,7 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 
         mRef!!.child(LEVEL_CHILD).setValue(maxRoll)
 
-        mRollData.add(RollData(maxRoll, 0.0, 0))
+        mRollData.add(RollData(maxRoll, 0.0, 0,0))
 
     }
 
@@ -423,9 +420,9 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 
     private fun tryRoll() {
         Log.i(TAG, "Travaled $mDistanceTraveledSinceRoll")
+		mRollData.last().distance += DISTANCE_BETWEEN_ROLLS
 
         if (mDistanceTraveledSinceRoll > DISTANCE_BETWEEN_ROLLS) {
-			mRollData.last().distance += DISTANCE_BETWEEN_ROLLS
 			roll()
         }
 
@@ -435,6 +432,8 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 
     private fun roll()
     {
+		mRollData.last().rolls++
+
         if(!settings.notifcationEveryRoll)
             vibrate()
 
@@ -442,16 +441,28 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 
         val nextRoll = genrateRollStack()
 
-        if(mActiveFragment is MainFragment)
-            (mActiveFragment as MainFragment).updateRollResult(this)
-
         updateCombo(nextRoll)
 
         lastRoll = nextRoll
 
         addRollToDatabase()
 
-        if(lastRoll == maxRoll)
+		if(mActiveFragment is MainFragment){
+			(mActiveFragment as MainFragment).updateRollResult(this)
+		}
+		else if(settings.notifcationEveryRoll){
+			val title = getString(R.string.notifaction_roll_title)
+
+			val notContent = if(lastRoll == maxRoll){
+				getString(R.string.notifaction_roll_sucess, nextRoll)
+			}else{
+				getString(R.string.notifaction_roll_content, nextRoll.toString(), comboNum)
+			}
+
+			showNotification(title, notContent)
+		}
+
+		if(lastRoll == maxRoll)
         {
             sucessfullRoll()
         }
@@ -484,18 +495,26 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 
 					mRollData = if (!snapshot.hasChild(ROLL_CHILD)) {
 						val vaule = ArrayList<RollData>()
-						vaule.add(RollData(START_MAX_ROLL, 0.0, 0))
+						vaule.add(RollData(START_MAX_ROLL, 0.0, 0,0))
 						mRef!!.child(ROLL_CHILD).setValue(vaule)
 						vaule
 					}
 					else
 					{
 						val value = snapshot.child(ROLL_CHILD).value as ArrayList<HashMap<String, Any>>
+
 						val result = ArrayList<RollData>()
 
 						for(entry in value)
 						{
-							result.add(RollData(entry["target"].toString().toLong(), entry["distance"].toString().toDouble(), entry["bestCombo"].toString().toLong()))
+							result.add(
+								RollData(
+									entry["target"].toString().toLong(),
+									entry["distance"].toString().toDouble(),
+									entry["rolls"].toString().toLong(),
+									entry["bestCombo"].toString().toLong()
+								)
+							)
 						}
 
 						result

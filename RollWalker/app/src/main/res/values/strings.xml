@@ -18,10 +18,12 @@
     <string name="result_distance_travled_title">Traveled %s</string>
     <string name="result_combo">Best Combo %d</string>
     <string name="result_title">HALL OF HISTORY</string>
+
     <string name="notifaction_sucess_title">TARGET UPDATE</string>
     <string name="notifaction_sucess_content">You have achieved your target %d</string>
     <string name="notifaction_roll_title">New roll</string>
-    <string name="notifaction_roll_content">You have rolled a %s</string>
+    <string name="notifaction_roll_content">You have rolled a %s combo: %d</string>
+    <string name="notifaction_roll_sucess">THE TARGET HAS BEEN HIT THE TARGET HAS BEEN HIT NEW TARGET IS %d</string>
 
     <string name="options_disable_animation">Animation enabled </string>
     <string name="options_notifacation_every_roll">Notification every roll </string>

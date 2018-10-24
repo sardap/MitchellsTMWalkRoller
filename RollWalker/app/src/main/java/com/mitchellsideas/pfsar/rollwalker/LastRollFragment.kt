@@ -28,17 +28,9 @@ class LastRollFragment : Fragment() {
     private class Entry(rollData: RollData, activity: Activity)
     {
         val distance = activity.getString(R.string.result_distance_travled_title, distanceToString(rollData.distance))
-        val numberOfRolls = activity.getString(R.string.result_num_of_rolls, calcNumOfRolls(rollData))
+        val numberOfRolls = activity.getString(R.string.result_num_of_rolls, rollData.rolls)
         val target = activity.getString(R.string.result_target_title, rollData.target)
         val combo = activity.getString(R.string.result_combo, rollData.bestCombo)
-
-        fun calcNumOfRolls(rollData: RollData) : Long
-        {
-            if(rollData.distance > 0)
-                return Math.floor(rollData.distance / Main.DISTANCE_BETWEEN_ROLLS).toLong()
-
-            return 0L
-        }
 
         fun distanceToString(pDistance: Double) : String
         {
