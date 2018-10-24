@@ -421,7 +421,7 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 
     private fun tryRoll() {
         Log.i(TAG, "Travaled $mDistanceTraveledSinceRoll")
-		mRollData.last().distance += DISTANCE_BETWEEN_ROLLS
+		mRollData.last().distance += mDistanceTraveledSinceRoll
 
         if (mDistanceTraveledSinceRoll > DISTANCE_BETWEEN_ROLLS) {
 			roll()
