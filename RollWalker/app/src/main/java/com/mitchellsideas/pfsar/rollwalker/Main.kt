@@ -64,7 +64,7 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var auth: FirebaseAuth
     private var mUser: FirebaseUser? = null
     private var mRef: DatabaseReference? = null
-    private val mLoaded = hashMapOf(ROLL_CHILD to false, LEVEL_CHILD to false, COMBO_CHILD to false, PROGRESS_CHILD to false)
+    private var mLoaded = hashMapOf(ROLL_CHILD to false, LEVEL_CHILD to false, COMBO_CHILD to false, PROGRESS_CHILD to false)
     private lateinit var mViewHolder: ViewHolder
     private lateinit var mRollData: ArrayList<RollData>
     private lateinit var mFirebaseAnalytics: FirebaseAnalytics
@@ -161,6 +161,11 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         // Handle item selection
+		if(!mLoaded.all { it .value })
+		{
+			Toast.makeText(applicationContext, "Not ready yet!", Toast.LENGTH_SHORT).show()
+		}
+
         return when (item.itemId) {
             R.id.menu_switch_to_main -> {
                 if(mActiveFragment !is MainFragment)
@@ -172,14 +177,7 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
             R.id.menu_see_last_rolls -> {
                 if(mActiveFragment !is LastRollFragment)
                 {
-                    if(mLoaded.all { it .value })
-                    {
-                        replaceFragment(LastRollFragment.newInstance(mRollData, this))
-                    }
-                    else
-                    {
-                        Toast.makeText(applicationContext, "Not ready yet!", Toast.LENGTH_SHORT).show()
-                    }
+					replaceFragment(LastRollFragment.newInstance(mRollData, this))
                 }
                 true
             }
@@ -221,6 +219,8 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
     }
 
 	fun clearDatabase() {
+		mLoaded.forEach { t, u -> mLoaded[t] = false }
+
 		mRef!!.child(COMBO_CHILD).setValue(null)
 		mRef!!.child(LEVEL_CHILD).setValue(null)
 		mRef!!.child(PROGRESS_CHILD).setValue(null)
