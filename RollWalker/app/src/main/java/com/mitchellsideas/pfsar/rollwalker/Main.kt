@@ -164,6 +164,7 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 		if(!mLoaded.all { it .value })
 		{
 			Toast.makeText(applicationContext, "Not ready yet!", Toast.LENGTH_SHORT).show()
+			return false
 		}
 
         return when (item.itemId) {
@@ -226,11 +227,18 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 		mRef!!.child(PROGRESS_CHILD).setValue(null)
 		mRef!!.child(ROLL_CHILD).setValue(null)
 		readDataFromFirebase()
+		initlise()
 
 		Toast.makeText(applicationContext, getString(R.string.completed_clear), Toast.LENGTH_SHORT).show()
 	}
 
     private fun initlise() {
+		maxRoll = 0L
+		comboNum = 0L
+		maxCombo = 0L
+		lastRoll = 0L
+
+
     }
 
     private fun signIn() {
