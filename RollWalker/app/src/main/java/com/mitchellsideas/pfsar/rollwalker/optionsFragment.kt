@@ -28,6 +28,7 @@ class optionsFragment : Fragment() {
 
 			entArray.add(EntrySwitch(activity.getString(R.string.options_disable_animation), main.settings.rollAnimation, optionsFragment::switchRollAnimation))
 			entArray.add(EntrySwitch(activity.getString(R.string.options_notifacation_every_roll), main.settings.notifcationEveryRoll, optionsFragment::switchRollNotifaction))
+			entArray.add(EntrySwitch(activity.getString(R.string.options_enable_vibration), main.settings.vibrateOnRoll, optionsFragment::clearDatabase))
 			entArray.add(ClearEntry(activity.getString(R.string.options_clear_entries), optionsFragment::clearDatabase))
 
 			val result = Array<Entry?>(entArray.size){null}
@@ -163,6 +164,11 @@ class optionsFragment : Fragment() {
 
 	private fun switchRollNotifaction(): Boolean {
 		mMain.settings.notifcationEveryRoll = !mMain.settings.notifcationEveryRoll
+		return true
+	}
+
+	private fun switchVibrationMode(): Boolean {
+		mMain.settings.vibrateOnRoll = !mMain.settings.vibrateOnRoll
 		return true
 	}
 

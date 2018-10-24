@@ -337,6 +337,7 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
             )
             return
         }
+
         locationManager!!.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0L, 0f, locationListener)
     }
 
@@ -434,7 +435,7 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
     {
 		mRollData.last().rolls++
 
-        if(!settings.notifcationEveryRoll)
+        if(settings.vibrateOnRoll)
             vibrate()
 
         mDistanceTraveledSinceRoll = 0.0
@@ -606,7 +607,7 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 		const val PROGRESS_CHILD = "progress"
 		const val SETTINGS_CHILD = "settings"
         const val DISTANCE_BETWEEN_ROLLS = 1
-        const val ANIMATION_COUNT = 25
+        const val ANIMATION_COUNT = 100
         const val CHANNEL_NAME = "ROLL_WALKER"
 
         private const val MIN_ROLL = 1L
