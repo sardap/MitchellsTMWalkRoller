@@ -1,7 +1,6 @@
 package com.mitchellsideas.pfsar.rollwalker
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -113,6 +112,7 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
     override fun onStop() {
         super.onStop()
         mRef!!.child(SETTINGS_CHILD).setValue(settings)
+        addRollToDatabase()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -220,6 +220,16 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 		mNotificationManager.notify(0, mBuilder.build())
     }
 
+	fun clearDatabase() {
+		mRef!!.child(COMBO_CHILD).setValue(null)
+		mRef!!.child(LEVEL_CHILD).setValue(null)
+		mRef!!.child(PROGRESS_CHILD).setValue(null)
+		mRef!!.child(ROLL_CHILD).setValue(null)
+		readDataFromFirebase()
+
+		Toast.makeText(applicationContext, getString(R.string.completed_clear), Toast.LENGTH_SHORT).show()
+	}
+
     private fun initlise() {
     }
 
@@ -243,107 +253,7 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 
                     mRef = database.getReference(mUser!!.uid)
 
-                    mRef!!.addListenerForSingleValueEvent(
-                        object : ValueEventListener {
-                            override fun onCancelled(p0: DatabaseError) {
-                            }
-
-                            override fun onDataChange(snapshot: DataSnapshot) {
-                                mLoaded[ROLL_CHILD] = true
-
-                                mRollData = if (!snapshot.hasChild(ROLL_CHILD)) {
-                                    val vaule = ArrayList<RollData>()
-                                    vaule.add(RollData(START_MAX_ROLL, 0.0, 0))
-                                    mRef!!.child(ROLL_CHILD).setValue(vaule)
-                                    vaule
-                                }
-                                else
-                                {
-                                    val value = snapshot.child(ROLL_CHILD).value as ArrayList<HashMap<String, Any>>
-                                    val result = ArrayList<RollData>()
-
-                                    for(entry in value)
-                                    {
-                                        result.add(RollData(entry["target"].toString().toLong(), entry["distance"].toString().toDouble(), entry["bestCombo"].toString().toLong()))
-                                    }
-
-                                    result
-                                }
-                            }
-                        })
-
-                    mRef!!.addListenerForSingleValueEvent(
-                        object : ValueEventListener {
-                            override fun onCancelled(p0: DatabaseError) {
-                            }
-
-                            override fun onDataChange(snapshot: DataSnapshot) {
-                                mLoaded[LEVEL_CHILD] = true
-
-                                val target = if (!snapshot.hasChild(LEVEL_CHILD)) {
-                                    mRef!!.child(LEVEL_CHILD).setValue(START_MAX_ROLL)
-                                    START_MAX_ROLL
-                                } else {
-                                    val result = snapshot.child(LEVEL_CHILD).value
-                                    result.toString().toLong()
-                                }
-
-                                SetTarget(target)
-                            }
-                        })
-
-                    mRef!!.addListenerForSingleValueEvent(
-                        object : ValueEventListener {
-                            override fun onCancelled(p0: DatabaseError) {
-                            }
-
-                            override fun onDataChange(snapshot: DataSnapshot) {
-                                mLoaded[COMBO_CHILD] = true
-
-                                maxCombo = if (!snapshot.hasChild(COMBO_CHILD)) {
-                                    mRef!!.child(COMBO_CHILD).setValue(0)
-                                    0
-                                } else {
-                                    val result = snapshot.child(COMBO_CHILD).value
-                                    result.toString().toLong()
-                                }
-                            }
-                        })
-
-                    mRef!!.addListenerForSingleValueEvent(
-                        object : ValueEventListener {
-                            override fun onCancelled(p0: DatabaseError) {
-                            }
-
-                            override fun onDataChange(snapshot: DataSnapshot) {
-                                mLoaded[PROGRESS_CHILD] = true
-
-                                mDistanceTraveledSinceRoll = if (!snapshot.hasChild(PROGRESS_CHILD)) {
-                                    mRef!!.child(PROGRESS_CHILD).setValue(0.0)
-                                    0.0
-                                } else {
-                                    val result = snapshot.child(PROGRESS_CHILD).value
-                                    result.toString().toDouble()
-                                }
-                            }
-                        })
-
-
-                    mRef!!.addListenerForSingleValueEvent(
-                        object : ValueEventListener {
-                            override fun onCancelled(p0: DatabaseError) {
-                            }
-
-                            override fun onDataChange(snapshot: DataSnapshot) {
-								settings = if (!snapshot.hasChild(SETTINGS_CHILD)) {
-									val result = Settings()
-                                    mRef!!.child(SETTINGS_CHILD).setValue(result)
-									result
-                                } else {
-                                    FirebaseUtilsJava.deserialize(snapshot.child(SETTINGS_CHILD), Settings::class.java)
-                                }
-                            }
-                        })
+                    readDataFromFirebase()
 
 
 
@@ -517,12 +427,15 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 
     private fun roll()
     {
-        if(!(mActivityVisible && !settings.notifcationEveryRoll))
+        if(!settings.notifcationEveryRoll)
             vibrate()
 
         mDistanceTraveledSinceRoll = 0.0
 
-        val nextRoll = startDiceRollAnimation()
+        val nextRoll = genrateRollStack()
+
+        if(mActiveFragment is MainFragment)
+            (mActiveFragment as MainFragment).updateRollResult(this)
 
         updateCombo(nextRoll)
 
@@ -536,7 +449,7 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
-    private fun startDiceRollAnimation() : Long
+    private fun genrateRollStack() : Long
     {
         val tempList = ArrayList<Long>()
 
@@ -551,6 +464,110 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 
         return tempList[0]
     }
+
+	private fun readDataFromFirebase() {
+		mRef!!.addListenerForSingleValueEvent(
+			object : ValueEventListener {
+				override fun onCancelled(p0: DatabaseError) {
+				}
+
+				override fun onDataChange(snapshot: DataSnapshot) {
+					mLoaded[ROLL_CHILD] = true
+
+					mRollData = if (!snapshot.hasChild(ROLL_CHILD)) {
+						val vaule = ArrayList<RollData>()
+						vaule.add(RollData(START_MAX_ROLL, 0.0, 0))
+						mRef!!.child(ROLL_CHILD).setValue(vaule)
+						vaule
+					}
+					else
+					{
+						val value = snapshot.child(ROLL_CHILD).value as ArrayList<HashMap<String, Any>>
+						val result = ArrayList<RollData>()
+
+						for(entry in value)
+						{
+							result.add(RollData(entry["target"].toString().toLong(), entry["distance"].toString().toDouble(), entry["bestCombo"].toString().toLong()))
+						}
+
+						result
+					}
+				}
+			})
+
+		mRef!!.addListenerForSingleValueEvent(
+			object : ValueEventListener {
+				override fun onCancelled(p0: DatabaseError) {
+				}
+
+				override fun onDataChange(snapshot: DataSnapshot) {
+					mLoaded[LEVEL_CHILD] = true
+
+					val target = if (!snapshot.hasChild(LEVEL_CHILD)) {
+						mRef!!.child(LEVEL_CHILD).setValue(START_MAX_ROLL)
+						START_MAX_ROLL
+					} else {
+						val result = snapshot.child(LEVEL_CHILD).value
+						result.toString().toLong()
+					}
+
+					SetTarget(target)
+				}
+			})
+
+		mRef!!.addListenerForSingleValueEvent(
+			object : ValueEventListener {
+				override fun onCancelled(p0: DatabaseError) {
+				}
+
+				override fun onDataChange(snapshot: DataSnapshot) {
+					mLoaded[COMBO_CHILD] = true
+
+					maxCombo = if (!snapshot.hasChild(COMBO_CHILD)) {
+						mRef!!.child(COMBO_CHILD).setValue(0)
+						0
+					} else {
+						val result = snapshot.child(COMBO_CHILD).value
+						result.toString().toLong()
+					}
+				}
+			})
+
+		mRef!!.addListenerForSingleValueEvent(
+			object : ValueEventListener {
+				override fun onCancelled(p0: DatabaseError) {
+				}
+
+				override fun onDataChange(snapshot: DataSnapshot) {
+					mLoaded[PROGRESS_CHILD] = true
+
+					mDistanceTraveledSinceRoll = if (!snapshot.hasChild(PROGRESS_CHILD)) {
+						mRef!!.child(PROGRESS_CHILD).setValue(0.0)
+						0.0
+					} else {
+						val result = snapshot.child(PROGRESS_CHILD).value
+						result.toString().toDouble()
+					}
+				}
+			})
+
+
+		mRef!!.addListenerForSingleValueEvent(
+			object : ValueEventListener {
+				override fun onCancelled(p0: DatabaseError) {
+				}
+
+				override fun onDataChange(snapshot: DataSnapshot) {
+					settings = if (!snapshot.hasChild(SETTINGS_CHILD)) {
+						val result = Settings()
+						mRef!!.child(SETTINGS_CHILD).setValue(result)
+						result
+					} else {
+						FirebaseUtilsJava.deserialize(snapshot.child(SETTINGS_CHILD), Settings::class.java)
+					}
+				}
+			})
+	}
 
     companion object {
         val RANDOM = Random()

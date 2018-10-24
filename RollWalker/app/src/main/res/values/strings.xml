@@ -25,5 +25,8 @@
 
     <string name="options_disable_animation">Animation enabled </string>
     <string name="options_notifacation_every_roll">Notification every roll </string>
+    <string name="options_clear_entries">Clear progress</string>
+
+    <string name="completed_clear">All progress cleared</string>
 
 </resources>

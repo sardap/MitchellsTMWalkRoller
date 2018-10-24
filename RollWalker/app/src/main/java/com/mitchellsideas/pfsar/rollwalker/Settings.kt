@@ -4,5 +4,4 @@ class Settings {
 
 	var rollAnimation: Boolean = true
 	var notifcationEveryRoll: Boolean = false
-
 }
