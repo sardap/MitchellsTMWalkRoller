@@ -31,7 +31,7 @@ class LastRollFragment : Fragment() {
         val numberOfRolls = activity.getString(R.string.result_num_of_rolls, rollData.rolls)
         val target = activity.getString(R.string.result_target_title, rollData.target)
         val combo = activity.getString(R.string.result_combo, rollData.bestCombo)
-        val shakes = activity.getString(R.string.result_shakes, (rollData.shakes / 2).toString())
+        val shakes = activity.getString(R.string.result_shakes, rollData.shakes.toString())
 
         fun distanceToString(pDistance: Double) : String
         {
