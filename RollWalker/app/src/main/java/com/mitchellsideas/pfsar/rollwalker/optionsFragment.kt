@@ -17,18 +17,17 @@ class optionsFragment : Fragment() {
 	companion object {
 		fun newInstance(activity: Activity, main: Main): optionsFragment {
 			val result = optionsFragment()
-			result.mMain = main
 			result.mOptions = poplauteEntryArray(result, activity)
 			return result
 		}
 
 		private fun poplauteEntryArray(optionsFragment: optionsFragment, activity: Activity): Array<Entry> {
 			val entArray = ArrayList<Entry>(3)
-			val main = (activity as Main)
+			val data = Data.instance()
 
-			entArray.add(EntrySwitch(activity.getString(R.string.options_disable_animation), main.settings.rollAnimation, optionsFragment::switchRollAnimation))
-			entArray.add(EntrySwitch(activity.getString(R.string.options_notifacation_every_roll), main.settings.notifcationEveryRoll, optionsFragment::switchRollNotifaction))
-			entArray.add(EntrySwitch(activity.getString(R.string.options_enable_vibration), main.settings.vibrateOnRoll, optionsFragment::switchVibrationMode))
+			entArray.add(EntrySwitch(activity.getString(R.string.options_disable_animation), data.settings.rollAnimation, optionsFragment::switchRollAnimation))
+			entArray.add(EntrySwitch(activity.getString(R.string.options_notifacation_every_roll), data.settings.notifcationEveryRoll, optionsFragment::switchRollNotifaction))
+			entArray.add(EntrySwitch(activity.getString(R.string.options_enable_vibration), data.settings.vibrateOnRoll, optionsFragment::switchVibrationMode))
 			entArray.add(ClearEntry(activity.getString(R.string.options_clear_entries), optionsFragment::clearDatabase))
 
 			val result = Array<Entry?>(entArray.size){null}
@@ -133,7 +132,7 @@ class optionsFragment : Fragment() {
 
 	private lateinit var mViewHolder: ViewHolder
 	private lateinit var mOptions: Array<Entry>
-	private lateinit var mMain: Main
+	private val mData = Data.instance()
 
 	override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
 		val view = inflater.inflate(R.layout.options_fragment, container, false)
@@ -158,22 +157,22 @@ class optionsFragment : Fragment() {
 	}
 
 	private fun switchRollAnimation(): Boolean {
-		mMain.settings.rollAnimation = !mMain.settings.rollAnimation
+		mData.settings.rollAnimation = !mData.settings.rollAnimation
 		return true
 	}
 
 	private fun switchRollNotifaction(): Boolean {
-		mMain.settings.notifcationEveryRoll = !mMain.settings.notifcationEveryRoll
+		mData.settings.notifcationEveryRoll = !mData.settings.notifcationEveryRoll
 		return true
 	}
 
 	private fun switchVibrationMode(): Boolean {
-		mMain.settings.vibrateOnRoll = !mMain.settings.vibrateOnRoll
+		mData.settings.vibrateOnRoll = !mData.settings.vibrateOnRoll
 		return true
 	}
 
 	private fun clearDatabase() : Boolean{
-		mMain.clearDatabase()
+		(activity as Main).clearDatabase()
 		return true
 	}
 }
