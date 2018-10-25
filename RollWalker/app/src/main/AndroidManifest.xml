@@ -19,11 +19,6 @@
             android:theme="@style/AppTheme" android:fullBackupContent="@xml/backup_descriptor"
             tools:ignore="GoogleAppIndexingWarning">
 
-
-        <meta-data
-                android:name="com.google.android.geo.API_KEY"
-                android:value="@string/google_maps_key"/>
-
         <activity
                 android:name="com.mitchellsideas.pfsar.rollwalker.Main"
                 android:label="@string/title_activity_main"
@@ -40,6 +35,18 @@
                 <action android:name="shake.detector" />
             </intent-filter>
         </receiver>
+
+        <meta-data
+                android:name="com.google.android.geo.API_KEY"
+                android:value="@string/google_maps_key"/>
+
+        <meta-data android:name="com.google.android.gms.games.APP_ID"
+                   android:value="@string/app_id" />
+
+        <meta-data
+                android:name="com.google.android.gms.version"
+                android:value="@integer/google_play_services_version" />
+
 
     </application>
 
