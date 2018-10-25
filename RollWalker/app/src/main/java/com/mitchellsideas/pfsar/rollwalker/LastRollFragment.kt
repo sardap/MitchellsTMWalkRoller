@@ -31,6 +31,7 @@ class LastRollFragment : Fragment() {
         val numberOfRolls = activity.getString(R.string.result_num_of_rolls, rollData.rolls)
         val target = activity.getString(R.string.result_target_title, rollData.target)
         val combo = activity.getString(R.string.result_combo, rollData.bestCombo)
+        val shakes = activity.getString(R.string.result_shakes, rollData.shakes.toString())
 
         fun distanceToString(pDistance: Double) : String
         {
@@ -61,6 +62,7 @@ class LastRollFragment : Fragment() {
             val numRolls = view.findViewById<TextView>(R.id.num_of_rolls)
             val distanceTraveled = view.findViewById<TextView>(R.id.distance_traveled)
             val combo = view.findViewById<TextView>(R.id.combo)
+            val shakes = view.findViewById<TextView>(R.id.shakes)
         }
 
 
@@ -79,6 +81,7 @@ class LastRollFragment : Fragment() {
             holder.distanceTraveled.text = selectedEntry.distance
             holder.numRolls.text = selectedEntry.numberOfRolls
             holder.combo.text = selectedEntry.combo
+            holder.shakes.text = selectedEntry.shakes
         }
 
         // Return the size of your dataset (invoked by the layout manager)

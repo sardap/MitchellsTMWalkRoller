@@ -16,6 +16,7 @@
     <string name="result_target_title">Target %d</string>
     <string name="result_num_of_rolls">Rolls %d</string>
     <string name="result_distance_travled_title">Traveled %s</string>
+    <string name="result_shakes">Shakes %s</string>
     <string name="result_combo">Best Combo %d</string>
     <string name="result_title">HALL OF HISTORY</string>
 

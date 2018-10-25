@@ -20,6 +20,9 @@ import android.support.v4.app.NotificationCompat
 import android.support.v4.content.ContextCompat
 import android.util.Log
 import android.view.*
+import android.view.animation.Animation
+import android.view.animation.AnimationUtils
+import android.widget.LinearLayout
 import android.widget.Toast
 
 import com.google.android.gms.maps.GoogleMap
@@ -37,15 +40,18 @@ import com.google.android.gms.common.api.ApiException
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.database.*
+import safety.com.br.android_shake_detector.core.ShakeDetector
+import safety.com.br.android_shake_detector.core.ShakeOptions
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 
 
 class Main : AppCompatActivity(), OnMapReadyCallback {
 
-    private class ViewHolder(activity: Activity) {
+	private class ViewHolder(activity: Activity) {
 
         val porgressBar: ProgressBar = activity.findViewById(R.id.progress_to_next_roll)
+		val mainLayout: LinearLayout = activity.findViewById(R.id.main_layout)
     }
 
     var animeRollStack = Stack<Long>()
@@ -69,8 +75,9 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var mRollData: ArrayList<RollData>
     private lateinit var mFirebaseAnalytics: FirebaseAnalytics
     private var mActivityVisible: Boolean = true
+	private lateinit var mShakeDetector: ShakeDetector
 
-    override fun onCreate(savedInstanceState: Bundle?) {
+	override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
@@ -95,10 +102,13 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 
         auth = FirebaseAuth.getInstance()
         signIn()
-        initlise()
+
+		setupShakeDectector()
+
+		initlise()
     }
 
-    override fun onPause() {
+	override fun onPause() {
         super.onPause()
         mActivityVisible = false
     }
@@ -114,6 +124,11 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
         mRef!!.child(SETTINGS_CHILD).setValue(settings)
         addRollToDatabase()
     }
+
+	override fun onDestroy() {
+		super.onDestroy()
+		mShakeDetector.destroy(baseContext);
+	}
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
@@ -194,7 +209,7 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
-    fun showNotification(title: String, content: String)
+	fun showNotification(title: String, content: String)
     {
 
 		val mNotificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -288,24 +303,22 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 
         val locationListener = object : LocationListener {
             override fun onLocationChanged(location: Location?) {
-                if (mLastLocation == null) {
-                    mLastLocation = location
-                }
+				if (mLastLocation == null) {
+					mLastLocation = location
+				}
 
-                val latitude = location!!.latitude
-                val longitude = location.longitude
+				val latitude = location!!.latitude
+				val longitude = location.longitude
 
-                Log.i(Main.TAG, "Latitute: $latitude ; Longitute: $longitude")
+				Log.i(Main.TAG, "Latitute: $latitude ; Longitute: $longitude")
 
-                val distance = mLastLocation!!.distanceTo(location)
+				val distance = mLastLocation!!.distanceTo(location)
 
-                mDistanceTraveledSinceRoll += distance
+				if (mLoaded.all { it.value }) {
+					mRollData.last().distance += distance
+				}
 
-                if(mLoaded.all { it.value })
-                {
-                    tryRoll()
-                    mRef!!.child(PROGRESS_CHILD).setValue(mDistanceTraveledSinceRoll)
-                }
+				moved(distance.toDouble())
 
                 mLastLocation = location
             }
@@ -403,7 +416,7 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 
         mRef!!.child(LEVEL_CHILD).setValue(maxRoll)
 
-        mRollData.add(RollData(maxRoll, 0.0, 0,0))
+        mRollData.add(RollData(maxRoll, 0.0, 0,0, 0))
 
     }
 
@@ -419,9 +432,18 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
-    private fun tryRoll() {
+	private fun moved(distance: Double){
+		mDistanceTraveledSinceRoll += distance
+
+		if(mLoaded.all { it.value })
+		{
+			tryRoll()
+			mRef!!.child(PROGRESS_CHILD).setValue(mDistanceTraveledSinceRoll)
+		}
+	}
+
+	private fun tryRoll() {
         Log.i(TAG, "Travaled $mDistanceTraveledSinceRoll")
-		mRollData.last().distance += mDistanceTraveledSinceRoll
 
         if (mDistanceTraveledSinceRoll > DISTANCE_BETWEEN_ROLLS) {
 			roll()
@@ -496,7 +518,7 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 
 					mRollData = if (!snapshot.hasChild(ROLL_CHILD)) {
 						val vaule = ArrayList<RollData>()
-						vaule.add(RollData(START_MAX_ROLL, 0.0, 0,0))
+						vaule.add(RollData(START_MAX_ROLL, 0.0, 0,0, 0))
 						mRef!!.child(ROLL_CHILD).setValue(vaule)
 						vaule
 					}
@@ -513,7 +535,8 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 									entry["target"].toString().toLong(),
 									entry["distance"].toString().toDouble(),
 									entry["rolls"].toString().toLong(),
-									entry["bestCombo"].toString().toLong()
+									entry["bestCombo"].toString().toLong(),
+									entry["shakes"].toString().toLong()
 								)
 							)
 						}
@@ -597,6 +620,39 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 			})
 	}
 
+	private fun setupShakeDectector() {
+		val options = ShakeOptions()
+			.background(true)
+			.interval(1000)
+			.shakeCount(1)
+			.sensibility(3f)
+
+		mShakeDetector = ShakeDetector(options).start(this) {
+			Log.d(TAG, "SHAKEN")
+
+			mRollData.last().shakes++
+
+			mViewHolder.mainLayout.clearAnimation()
+			val animShake = AnimationUtils.loadAnimation(this, R.anim.shake)
+
+			animShake.setAnimationListener(object : Animation.AnimationListener {
+				override fun onAnimationStart(animation: Animation?) {
+				}
+
+				override fun onAnimationEnd(animation: Animation?) {
+				}
+
+				override fun onAnimationRepeat(animation: Animation?) {
+				}
+			})
+			mViewHolder.mainLayout.startAnimation(animShake)
+
+			moved(SHAKE_DISTANCE)
+		}
+
+		mShakeDetector = ShakeDetector(options).start(this)
+	}
+
     companion object {
         val RANDOM = Random()
 
@@ -607,8 +663,9 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 		const val PROGRESS_CHILD = "progress"
 		const val SETTINGS_CHILD = "settings"
         const val DISTANCE_BETWEEN_ROLLS = 1
-        const val ANIMATION_COUNT = 100
+        const val ANIMATION_COUNT = 50
         const val CHANNEL_NAME = "ROLL_WALKER"
+		const val SHAKE_DISTANCE = 0.256
 
         private const val MIN_ROLL = 1L
         private const val START_MAX_ROLL = 10L
