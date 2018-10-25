@@ -54,28 +54,21 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 		val mainLayout: LinearLayout = activity.findViewById(R.id.main_layout)
     }
 
-    var animeRollStack = Stack<Long>()
-    var maxRoll = 0L
-    var comboNum = 0L
-    var maxCombo = 0L
-    var lastRoll = 0L
-	var settings = Settings()
 
     private lateinit var mMap: GoogleMap
     private lateinit var mFragmentManager: FragmentManager
     private lateinit var mActiveFragment: Fragment
     private var mLastLocation: Location? = null
-    private var mDistanceTraveledSinceRoll = 0e0
     private lateinit var googleSignInClient: GoogleSignInClient
     private lateinit var auth: FirebaseAuth
     private var mUser: FirebaseUser? = null
     private var mRef: DatabaseReference? = null
     private var mLoaded = hashMapOf(ROLL_CHILD to false, LEVEL_CHILD to false, COMBO_CHILD to false, PROGRESS_CHILD to false)
     private lateinit var mViewHolder: ViewHolder
-    private lateinit var mRollData: ArrayList<RollData>
     private lateinit var mFirebaseAnalytics: FirebaseAnalytics
     private var mActivityVisible: Boolean = true
 	private lateinit var mShakeDetector: ShakeDetector
+	private var mData = Data.instance()
 
 	override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -121,13 +114,13 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 
     override fun onStop() {
         super.onStop()
-        mRef!!.child(SETTINGS_CHILD).setValue(settings)
+        mRef!!.child(SETTINGS_CHILD).setValue(mData.settings)
         addRollToDatabase()
     }
 
 	override fun onDestroy() {
 		super.onDestroy()
-		mShakeDetector.destroy(baseContext);
+		mShakeDetector.destroy(baseContext)
 	}
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -193,7 +186,7 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
             R.id.menu_see_last_rolls -> {
                 if(mActiveFragment !is LastRollFragment)
                 {
-					replaceFragment(LastRollFragment.newInstance(mRollData, this))
+					replaceFragment(LastRollFragment.newInstance(mData.rollData, this))
                 }
                 true
             }
@@ -248,10 +241,7 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 	}
 
     private fun initlise() {
-		maxRoll = 0L
-		comboNum = 0L
-		maxCombo = 0L
-		lastRoll = 0L
+
     }
 
     private fun signIn() {
@@ -315,7 +305,7 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 				val distance = mLastLocation!!.distanceTo(location)
 
 				if (mLoaded.all { it.value }) {
-					mRollData.last().distance += distance
+					mData.rollData.last().distance += distance
 				}
 
 				moved(distance.toDouble())
@@ -356,67 +346,67 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 
     private fun updateProgressBar()
     {
-        val percentDone = Math.round(mDistanceTraveledSinceRoll / DISTANCE_BETWEEN_ROLLS * 100).toInt()
+        val percentDone = Math.round(mData.distanceTraveledSinceRoll / DISTANCE_BETWEEN_ROLLS * 100).toInt()
         mViewHolder.porgressBar.progress = percentDone
     }
 
     private fun SetTarget(value: Long)
     {
-        maxRoll = value
+		mData.maxRoll = value
 
         if(mActiveFragment is MainFragment)
         {
-            (mActiveFragment as MainFragment).updateTargetText(maxRoll)
+            (mActiveFragment as MainFragment).updateTargetText(mData.maxRoll)
         }
     }
 
     private fun updateCombo(nextRoll: Long)
     {
 
-        if (nextRoll > lastRoll) {
-            comboNum++
+        if (nextRoll > mData.lastRoll) {
+			mData.comboNum++
 
-            if(comboNum > maxCombo)
+            if(mData.comboNum > mData.maxCombo)
             {
-                mRef!!.child(COMBO_CHILD).setValue(comboNum)
+                mRef!!.child(COMBO_CHILD).setValue(mData.comboNum)
 
-                maxCombo = comboNum
+				mData.maxCombo = mData.comboNum
             }
 
         } else {
-            comboNum = 1
+			mData.comboNum = 1
         }
 
-        if(comboNum > mRollData.last().bestCombo)
+        if(mData.comboNum > mData.rollData.last().bestCombo)
         {
-            mRollData.last().bestCombo = comboNum
+			mData.rollData.last().bestCombo = mData.comboNum
         }
 
         if(mActiveFragment is MainFragment)
         {
-            (mActiveFragment as MainFragment).updateComboText(comboNum)
+            (mActiveFragment as MainFragment).updateComboText(mData.comboNum)
         }
     }
 
     private fun addRollToDatabase()
     {
-        mRef!!.child(ROLL_CHILD).setValue(mRollData)
+        mRef!!.child(ROLL_CHILD).setValue(mData.rollData)
     }
 
     private fun sucessfullRoll() {
 		if(mActiveFragment !is MainFragment)
-        	Toast.makeText(this, getString(R.string.rolled_max_contents, lastRoll), Toast.LENGTH_LONG).show()
+        	Toast.makeText(this, getString(R.string.rolled_max_contents, mData.lastRoll), Toast.LENGTH_LONG).show()
 
 		if(!mActivityVisible)
-			showNotification(getString(R.string.notifaction_sucess_title), getString(R.string.notifaction_sucess_content, maxRoll))
+			showNotification(getString(R.string.notifaction_sucess_title), getString(R.string.notifaction_sucess_content, mData.maxRoll))
 
-        comboNum = 0
+		mData.comboNum = 0
 
-        SetTarget(maxRoll * 10)
+        SetTarget(mData.maxRoll * 10)
 
-        mRef!!.child(LEVEL_CHILD).setValue(maxRoll)
+        mRef!!.child(LEVEL_CHILD).setValue(mData.maxRoll)
 
-        mRollData.add(RollData(maxRoll, 0.0, 0,0, 0))
+		mData.rollData.add(RollData(mData.maxRoll, 0.0, 0,0, 0))
 
     }
 
@@ -433,19 +423,19 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
     }
 
 	private fun moved(distance: Double){
-		mDistanceTraveledSinceRoll += distance
+		mData.distanceTraveledSinceRoll += distance
 
 		if(mLoaded.all { it.value })
 		{
 			tryRoll()
-			mRef!!.child(PROGRESS_CHILD).setValue(mDistanceTraveledSinceRoll)
+			mRef!!.child(PROGRESS_CHILD).setValue(mData.distanceTraveledSinceRoll)
 		}
 	}
 
 	private fun tryRoll() {
-        Log.i(TAG, "Travaled $mDistanceTraveledSinceRoll")
+        Log.i(TAG, "Travaled $mData.distanceTraveledSinceRoll")
 
-        if (mDistanceTraveledSinceRoll > DISTANCE_BETWEEN_ROLLS) {
+        if (mData.distanceTraveledSinceRoll > DISTANCE_BETWEEN_ROLLS) {
 			roll()
         }
 
@@ -455,37 +445,37 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 
     private fun roll()
     {
-		mRollData.last().rolls++
+		mData.rollData.last().rolls++
 
-        if(settings.vibrateOnRoll)
+        if(mData.settings.vibrateOnRoll)
             vibrate()
 
-        mDistanceTraveledSinceRoll = 0.0
+		mData.distanceTraveledSinceRoll = 0.0
 
         val nextRoll = genrateRollStack()
 
         updateCombo(nextRoll)
 
-        lastRoll = nextRoll
+		mData.lastRoll = nextRoll
 
         addRollToDatabase()
 
 		if(mActiveFragment is MainFragment){
-			(mActiveFragment as MainFragment).updateRollResult(this)
+			(mActiveFragment as MainFragment).updateRollResult()
 		}
-		else if(settings.notifcationEveryRoll){
+		else if(mData.settings.notifcationEveryRoll){
 			val title = getString(R.string.notifaction_roll_title)
 
-			val notContent = if(lastRoll == maxRoll){
+			val notContent = if(mData.lastRoll == mData.maxRoll){
 				getString(R.string.notifaction_roll_sucess, nextRoll)
 			}else{
-				getString(R.string.notifaction_roll_content, nextRoll.toString(), comboNum)
+				getString(R.string.notifaction_roll_content, nextRoll.toString(), mData.comboNum)
 			}
 
 			showNotification(title, notContent)
 		}
 
-		if(lastRoll == maxRoll)
+		if(mData.lastRoll == mData.maxRoll)
         {
             sucessfullRoll()
         }
@@ -493,15 +483,17 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 
     private fun genrateRollStack() : Long
     {
-        val tempList = ArrayList<Long>()
+		mData.animeRollStack.clear()
 
-        animeRollStack.clear()
+		val tempList = ArrayList<Long>()
+
+		mData.animeRollStack.clear()
 
         for(i in 0 until ANIMATION_COUNT)
         {
-            val randomNumber = JavaUtils.nextLong (MIN_ROLL, maxRoll + 1, RANDOM)
+            val randomNumber = JavaUtils.nextLong (MIN_ROLL, mData.maxRoll + 1, RANDOM)
             tempList.add(randomNumber)
-            animeRollStack.push(tempList.last())
+			mData.animeRollStack.push(tempList.last())
         }
 
         return tempList[0]
@@ -516,7 +508,7 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 				override fun onDataChange(snapshot: DataSnapshot) {
 					mLoaded[ROLL_CHILD] = true
 
-					mRollData = if (!snapshot.hasChild(ROLL_CHILD)) {
+					mData.rollData = if (!snapshot.hasChild(ROLL_CHILD)) {
 						val vaule = ArrayList<RollData>()
 						vaule.add(RollData(START_MAX_ROLL, 0.0, 0,0, 0))
 						mRef!!.child(ROLL_CHILD).setValue(vaule)
@@ -574,7 +566,7 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 				override fun onDataChange(snapshot: DataSnapshot) {
 					mLoaded[COMBO_CHILD] = true
 
-					maxCombo = if (!snapshot.hasChild(COMBO_CHILD)) {
+					mData.maxCombo = if (!snapshot.hasChild(COMBO_CHILD)) {
 						mRef!!.child(COMBO_CHILD).setValue(0)
 						0
 					} else {
@@ -592,7 +584,7 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 				override fun onDataChange(snapshot: DataSnapshot) {
 					mLoaded[PROGRESS_CHILD] = true
 
-					mDistanceTraveledSinceRoll = if (!snapshot.hasChild(PROGRESS_CHILD)) {
+					mData.distanceTraveledSinceRoll = if (!snapshot.hasChild(PROGRESS_CHILD)) {
 						mRef!!.child(PROGRESS_CHILD).setValue(0.0)
 						0.0
 					} else {
@@ -609,7 +601,7 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 				}
 
 				override fun onDataChange(snapshot: DataSnapshot) {
-					settings = if (!snapshot.hasChild(SETTINGS_CHILD)) {
+					mData.settings = if (!snapshot.hasChild(SETTINGS_CHILD)) {
 						val result = Settings()
 						mRef!!.child(SETTINGS_CHILD).setValue(result)
 						result
@@ -630,7 +622,7 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 		mShakeDetector = ShakeDetector(options).start(this) {
 			Log.d(TAG, "SHAKEN")
 
-			mRollData.last().shakes++
+			mData.rollData.last().shakes++
 
 			mViewHolder.mainLayout.clearAnimation()
 			val animShake = AnimationUtils.loadAnimation(this, R.anim.shake)
