@@ -45,5 +45,4 @@ dependencies {
             [group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.4.1']
     )
     implementation 'com.github.safetysystemtechnology:android-shake-detector:v1.2'
-    implementation 'com.google.android.gms:play-services-games:16.0.0'
 }

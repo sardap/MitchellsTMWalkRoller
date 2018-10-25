@@ -1,6 +1,5 @@
 <resources>
     <string name="app_name">RollWalker</string>
-    <string name="app_id">com.mitchellsideas.pfsar.rollwalker</string>
     <string name="title_activity_main">Roll Walker</string>
     <string name="roll_desc">Last Roll: </string>
     <string name="roll_result_defualt"> %d </string>
@@ -33,7 +32,5 @@
     <string name="options_enable_vibration">Enable vibration</string>
 
     <string name="completed_clear">All progress cleared</string>
-
-    <string name="ach_stared_victory">HALL OF HISTORY</string>
 
 </resources>
