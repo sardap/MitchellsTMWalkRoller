@@ -37,6 +37,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.common.api.ApiException
+import com.google.android.gms.games.Games
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.database.*
@@ -87,7 +88,8 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
         mViewHolder = ViewHolder(this)
 
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken(getString(R.string.default_web_client_id))
+			//.requestScopes(Games.SCOPE_GAMES_LITE)
+			.requestIdToken(getString(R.string.default_web_client_id))
             .requestEmail()
             .build()
 
@@ -234,6 +236,7 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 		mRef!!.child(LEVEL_CHILD).setValue(null)
 		mRef!!.child(PROGRESS_CHILD).setValue(null)
 		mRef!!.child(ROLL_CHILD).setValue(null)
+		mRef!!.child(ROLL_CHILD).setValue(null)
 		readDataFromFirebase()
 		initlise()
 
@@ -244,7 +247,12 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 
     }
 
-    private fun signIn() {
+	private fun isSignedIn(): Boolean {
+		return GoogleSignIn.getLastSignedInAccount(this) != null
+	}
+
+
+	private fun signIn() {
         val signInIntent = googleSignInClient.signInIntent
         startActivityForResult(signInIntent, RC_SIGN_IN)
     }
@@ -391,6 +399,7 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
     private fun addRollToDatabase()
     {
         mRef!!.child(ROLL_CHILD).setValue(mData.rollData)
+		mRef!!.child(CURRENT_COMBO_CHILD).setValue(mData.comboNum)
     }
 
     private fun sucessfullRoll() {
@@ -436,7 +445,9 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
         Log.i(TAG, "Travaled $mData.distanceTraveledSinceRoll")
 
         if (mData.distanceTraveledSinceRoll > DISTANCE_BETWEEN_ROLLS) {
+			Log.i(TAG, "ROLLING")
 			roll()
+			AchievementUnlocker().Check(this)
         }
 
         updateProgressBar()
@@ -649,7 +660,8 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
         val RANDOM = Random()
 
         const val TAG = "ROLL_WALKER"
-        const val ROLL_CHILD = "rolls"
+		const val ROLL_CHILD = "rolls"
+		const val CURRENT_COMBO_CHILD = "curCombo"
         const val LEVEL_CHILD = "level"
         const val COMBO_CHILD = "combo"
 		const val PROGRESS_CHILD = "progress"
@@ -664,4 +676,6 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
         private const val RC_SIGN_IN = 9001
         private const val PERMISSION_REQUEST_ACCESS_FINE_LOCATION = 100
     }
+
+
 }
