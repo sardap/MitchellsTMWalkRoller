@@ -5,7 +5,10 @@
     <string name="roll_result_defualt">%d</string>
     <string name="main_menu_option">main screen</string>
     <string name="see_last_rolls">Prevouis rolls</string>
+
     <string name="menu_options">Options</string>
+    <string name="menu_view_achievements">Achievements</string>
+
     <string name="roll">roll:</string>
     <string name="rolled_max_title">YOU FUCKING DID IT</string>
     <string name="rolled_max_contents">YOU FUCKING DID IT YOU ROLLED %d LEVEL UP</string>

@@ -12,6 +12,9 @@
     <item android:id="@+id/menu_options"
           android:title="@string/menu_options"
     />
+    <item android:id="@+id/menu_view_achievements"
+          android:title="@string/menu_view_achievements"
+    />
 </menu>
 
 

@@ -13,7 +13,7 @@ class AchievementUnlocker {
 
 	private fun unlock(main: Main, id: Int){
 		Games.getAchievementsClient(main, GoogleSignIn.getLastSignedInAccount(main)!!)
-			.unlock(main.getString(id))
+			.unlockImmediate(main.getString(id))
 	}
 
 	private fun checkRollStackAchievements(main: Main){

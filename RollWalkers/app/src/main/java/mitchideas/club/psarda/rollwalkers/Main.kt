@@ -16,6 +16,7 @@ import android.os.Bundle
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.support.v4.app.*
+import android.support.v4.app.ActivityCompat.startActivityForResult
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
@@ -32,10 +33,16 @@ import com.google.android.gms.auth.api.Auth
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.games.AnnotatedData
 import com.google.android.gms.games.Games
+import com.google.android.gms.games.achievement.Achievement
+import com.google.android.gms.games.achievement.AchievementBuffer
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.tasks.OnCompleteListener
+import com.google.android.gms.tasks.OnSuccessListener
+import com.google.android.gms.tasks.Task
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -44,6 +51,7 @@ import com.google.firebase.database.*
 import safety.com.br.android_shake_detector.core.ShakeDetector
 import safety.com.br.android_shake_detector.core.ShakeOptions
 import java.util.*
+import kotlin.math.sign
 
 class Main : AppCompatActivity(), OnMapReadyCallback {
 
@@ -95,6 +103,7 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
 
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(this)
         replaceFragment(MainFragment.newInstance())
@@ -210,6 +219,10 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 
                 true
             }
+            R.id.menu_view_achievements -> {
+                showAchievements()
+                true
+            }
             else -> super.onOptionsItemSelected(item)
         }
     }
@@ -276,6 +289,9 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
                 testUnlock()
                 firebaseAuthWithGoogle(signedInAccount!!)
 
+                val gamesClient = Games.getGamesClient(this, signedInAccount);
+                gamesClient.setViewForPopups(findViewById(R.id.gps_popup))
+
             } else {
                 val expect = task.exception as com.google.android.gms.common.api.ApiException
 
@@ -320,6 +336,13 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
     private fun isSignedIn(): Boolean {
         return GoogleSignIn.getLastSignedInAccount(this) != null
     }
+
+    private fun showAchievements() {
+        Games.getAchievementsClient(this, GoogleSignIn.getLastSignedInAccount(this)!!)
+        .achievementsIntent
+        .addOnSuccessListener { intent -> startActivityForResult(intent, RC_ACHIEVEMENT_UI) };
+    }
+
 
     private fun testUnlock(){
         Games.getAchievementsClient(this, GoogleSignIn.getLastSignedInAccount(this)!!)

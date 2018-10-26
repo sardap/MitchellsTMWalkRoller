@@ -7,13 +7,27 @@
               tools:context=".Main"
               android:orientation="vertical"
 >
-    <ProgressBar
-            android:id="@+id/progress_to_next_roll"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            style="@android:style/Widget.ProgressBar.Horizontal"
-    />
 
+    <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+        <FrameLayout
+                android:id="@+id/gps_popup"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="20dp" />
+
+
+        <ProgressBar
+                android:id="@+id/progress_to_next_roll"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                style="@android:style/Widget.ProgressBar.Horizontal"
+        />
+
+    </RelativeLayout>
 
     <FrameLayout
             android:id="@+id/main_frame"
