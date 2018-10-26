@@ -1,4 +1,39 @@
 <resources>
     <string name="app_name">RollWalkers</string>
     <string name="signin_other_error">Log in fail tell paul</string>
+    <string name="roll_desc">Last Roll:</string>
+    <string name="roll_result_defualt">%d</string>
+    <string name="main_menu_option">main screen</string>
+    <string name="see_last_rolls">Prevouis rolls</string>
+    <string name="menu_options">Options</string>
+    <string name="roll">roll:</string>
+    <string name="rolled_max_title">YOU FUCKING DID IT</string>
+    <string name="rolled_max_contents">YOU FUCKING DID IT YOU ROLLED %d LEVEL UP</string>
+    <string name="combo_broken_message">NEW BEST COMOBO BEATING %d WITH %d</string>
+    <string name="roll_channel_desc">Rolling channel</string>
+    <string name="target_title">Target: %d</string>
+    <string name="combo_title">COMBO: %d</string>
+    <string name="result_target_title">Target %d</string>
+    <string name="result_num_of_rolls">Rolls %d</string>
+    <string name="result_distance_travled_title">Traveled %s</string>
+    <string name="result_shakes">Shakes %s</string>
+    <string name="result_combo">Best Combo %d</string>
+    <string name="result_title">HALL OF HISTORY</string>
+
+    <string name="notifaction_sucess_title">TARGET UPDATE</string>
+    <string name="notifaction_sucess_content">You have achieved your target %d</string>
+    <string name="notifaction_roll_title">New roll</string>
+    <string name="notifaction_roll_content">You have rolled a %s combo: %d</string>
+    <string name="notifaction_roll_sucess">THE TARGET HAS BEEN HIT THE TARGET HAS BEEN HIT NEW TARGET IS %d</string>
+
+    <string name="options_disable_animation">Animation enabled</string>
+    <string name="options_notifacation_every_roll">Notification every roll</string>
+    <string name="options_clear_entries">Clear progress</string>
+    <string name="options_enable_vibration">Enable vibration</string>
+
+    <string name="completed_clear">All progress cleared</string>
+
+    <string name="ach_stared_victory">HALL OF HISTORY</string>
+    <string name="title_activity_maps">Map</string>
+
 </resources>

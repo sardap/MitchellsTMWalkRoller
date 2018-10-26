@@ -6,44 +6,48 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
+import android.support.v7.app.AppCompatActivity
+import android.os.Bundle
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import android.util.Log
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
-import android.os.*
-import android.support.v7.app.AppCompatActivity
+import android.os.Build
+import android.os.VibrationEffect
+import android.os.Vibrator
 import android.support.v4.app.ActivityCompat
 import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentManager
 import android.support.v4.app.NotificationCompat
 import android.support.v4.content.ContextCompat
-import android.util.Log
-import android.view.*
+import android.support.v7.app.AlertDialog
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
 import android.widget.LinearLayout
+import android.widget.ProgressBar
 import android.widget.Toast
-
+import com.google.android.gms.auth.api.Auth
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.google.android.gms.games.Games
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import java.util.*
-import android.widget.ProgressBar
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
-import com.google.android.gms.auth.api.signin.GoogleSignInClient
-import com.google.android.gms.common.api.ApiException
-import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.database.*
 import safety.com.br.android_shake_detector.core.ShakeDetector
 import safety.com.br.android_shake_detector.core.ShakeOptions
-import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
+import java.util.*
+
 
 
 class Main : AppCompatActivity(), OnMapReadyCallback {
@@ -273,8 +277,6 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
                     mRef = database.getReference(mUser!!.uid)
 
                     readDataFromFirebase()
-
-
 
                 } else {
                     // If sign in fails, display a message to the user.
