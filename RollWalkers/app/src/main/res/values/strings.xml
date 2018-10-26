@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">RollWalkers</string>
+    <string name="signin_other_error">Log in fail tell paul</string>
+</resources>
