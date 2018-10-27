@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_id">1012008483734</string>
+
     <string name="achievement_stared_vic_1">CgkIlvefg7odEAIQAQ</string>
+    <string name="achievement_why_walk_when_you_can_shake" translatable="false">CgkIlvefg7odEAIQAw</string>
+    <string name="achievement_shakeius_military_tribune" translatable="false">CgkIlvefg7odEAIQBA</string>
+    <string name="achievement_shakeius_quaestor" translatable="false">CgkIlvefg7odEAIQBQ</string>
+    <string name="achievement_baby_steps" translatable="false">CgkIlvefg7odEAIQBg</string>
+    <string name="achievement_paul_is_a_fucking_idiot" translatable="false">CgkIlvefg7odEAIQBw</string>
+
 </resources>

@@ -16,7 +16,6 @@ import android.os.Bundle
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.support.v4.app.*
-import android.support.v4.app.ActivityCompat.startActivityForResult
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
@@ -33,16 +32,10 @@ import com.google.android.gms.auth.api.Auth
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.android.gms.games.AnnotatedData
 import com.google.android.gms.games.Games
-import com.google.android.gms.games.achievement.Achievement
-import com.google.android.gms.games.achievement.AchievementBuffer
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.tasks.OnCompleteListener
-import com.google.android.gms.tasks.OnSuccessListener
-import com.google.android.gms.tasks.Task
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -50,8 +43,8 @@ import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.database.*
 import safety.com.br.android_shake_detector.core.ShakeDetector
 import safety.com.br.android_shake_detector.core.ShakeOptions
+import java.lang.Exception
 import java.util.*
-import kotlin.math.sign
 
 class Main : AppCompatActivity(), OnMapReadyCallback {
 
@@ -73,9 +66,9 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
         const val ANIMATION_COUNT = 50
         const val CHANNEL_NAME = "ROLL_WALKER"
         const val SHAKE_DISTANCE = 0.256
+        const val START_MAX_ROLL = 10L
 
         private const val MIN_ROLL = 1L
-        private const val START_MAX_ROLL = 10L
 
 
     }
@@ -121,6 +114,14 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
         setupShakeDectector()
 
         initlise()
+
+        Thread.setDefaultUncaughtExceptionHandler { paramThread, paramThrowable ->
+            Games.getAchievementsClient(this, GoogleSignIn.getLastSignedInAccount(this)!!)
+                .incrementImmediate(getString(R.string.achievement_paul_is_a_fucking_idiot), 1)
+
+            10 / 0
+        }
+
     }
 
     override fun onPause() {
@@ -380,6 +381,8 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 
                 if (mLoaded.all { it.value }) {
                     mData.rollData.last().distance += distance
+
+                    //AchievementUnlocker().checkMoved(this)
                 }
 
                 moved(distance.toDouble())
@@ -513,7 +516,7 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
         if (mData.distanceTraveledSinceRoll > DISTANCE_BETWEEN_ROLLS) {
             Log.i(TAG, "ROLLING")
             roll()
-            AchievementUnlocker().Check(this)
+            AchievementUnlocker().CheckRoll(this)
         }
 
         updateProgressBar()
@@ -700,6 +703,8 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
             Log.d(TAG, "SHAKEN")
 
             mData.rollData.last().shakes++
+
+            AchievementUnlocker().checkShake(this)
 
             mViewHolder.mainLayout.clearAnimation()
             val animShake = AnimationUtils.loadAnimation(this, R.anim.shake)
