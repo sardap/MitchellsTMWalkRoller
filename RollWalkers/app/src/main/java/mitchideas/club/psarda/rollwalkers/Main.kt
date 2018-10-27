@@ -36,6 +36,7 @@ import com.google.android.gms.games.Games
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.tasks.OnSuccessListener
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -52,6 +53,7 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
         private const val RC_SIGN_IN = 9001
         private const val PERMISSION_REQUEST_ACCESS_FINE_LOCATION = 100
         private const val RC_ACHIEVEMENT_UI = 9003
+        private const val RC_LEADERBOARD_UI = 9004
 
         val RANDOM = Random()
 
@@ -115,13 +117,6 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 
         initlise()
 
-        Thread.setDefaultUncaughtExceptionHandler { paramThread, paramThrowable ->
-            Games.getAchievementsClient(this, GoogleSignIn.getLastSignedInAccount(this)!!)
-                .incrementImmediate(getString(R.string.achievement_paul_is_a_fucking_idiot), 1)
-
-            10 / 0
-        }
-
     }
 
     override fun onPause() {
@@ -155,9 +150,11 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
                 val signedInAccount = result.signInAccount
             } else {
                 var message = result.status.statusMessage
+
                 if (message == null || message.isEmpty()) {
-                    message = getString(R.string.signin_other_error)
+                    message = getString(R.string.signin_other_error, result.status.toString())
                 }
+
                 AlertDialog.Builder(this).setMessage(message)
                     .setNeutralButton(android.R.string.ok, null).show()
             }
@@ -224,6 +221,10 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
                 showAchievements()
                 true
             }
+            R.id.menu_view_leaderboard -> {
+                showLeaderboard()
+                true
+            }
             else -> super.onOptionsItemSelected(item)
         }
     }
@@ -287,7 +288,6 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
             if (task.isSuccessful) {
                 // The signed in account is stored in the task's result.
                 val signedInAccount = task.result
-                testUnlock()
                 firebaseAuthWithGoogle(signedInAccount!!)
 
                 val gamesClient = Games.getGamesClient(this, signedInAccount);
@@ -344,10 +344,10 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
         .addOnSuccessListener { intent -> startActivityForResult(intent, RC_ACHIEVEMENT_UI) };
     }
 
-
-    private fun testUnlock(){
-        Games.getAchievementsClient(this, GoogleSignIn.getLastSignedInAccount(this)!!)
-            .unlock(getString(R.string.achievement_stared_vic_1))
+    private fun showLeaderboard() {
+      Games.getLeaderboardsClient(this, GoogleSignIn.getLastSignedInAccount(this)!!)
+          .getLeaderboardIntent(getString(R.string.leaderboard_highest_target))
+          .addOnSuccessListener { intent -> startActivityForResult(intent, RC_LEADERBOARD_UI); }
     }
 
     private fun replaceFragment(newFragment: Fragment) {
@@ -366,6 +366,8 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 
         val locationManager = getSystemService(LOCATION_SERVICE) as LocationManager?
 
+        val main = this
+
         val locationListener = object : LocationListener {
             override fun onLocationChanged(location: Location?) {
                 if (mLastLocation == null) {
@@ -382,7 +384,7 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
                 if (mLoaded.all { it.value }) {
                     mData.rollData.last().distance += distance
 
-                    //AchievementUnlocker().checkMoved(this)
+                    AchievementUnlocker().checkMoved(main)
                 }
 
                 moved(distance.toDouble())
@@ -463,6 +465,8 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
         {
             (mActiveFragment as MainFragment).updateComboText(mData.comboNum)
         }
+
+        AchievementUnlocker().checkCombo(this)
     }
 
     private fun addRollToDatabase()
@@ -483,6 +487,8 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
         SetTarget(mData.maxRoll * 10)
 
         mRef!!.child(LEVEL_CHILD).setValue(mData.maxRoll)
+
+        LeaderBoardUpdater().updateTargetLeaderboard(this)
 
         mData.rollData.add(RollData(mData.maxRoll, 0.0, 0,0, 0))
 
@@ -701,27 +707,29 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
 
         mShakeDetector = ShakeDetector(options).start(this) {
             Log.d(TAG, "SHAKEN")
+            
+            if(mLoaded.all { it.value }){
+                mData.rollData.last().shakes++
 
-            mData.rollData.last().shakes++
+                AchievementUnlocker().checkShake(this)
 
-            AchievementUnlocker().checkShake(this)
+                mViewHolder.mainLayout.clearAnimation()
+                val animShake = AnimationUtils.loadAnimation(this, R.anim.shake)
 
-            mViewHolder.mainLayout.clearAnimation()
-            val animShake = AnimationUtils.loadAnimation(this, R.anim.shake)
+                animShake.setAnimationListener(object : Animation.AnimationListener {
+                    override fun onAnimationStart(animation: Animation?) {
+                    }
 
-            animShake.setAnimationListener(object : Animation.AnimationListener {
-                override fun onAnimationStart(animation: Animation?) {
-                }
+                    override fun onAnimationEnd(animation: Animation?) {
+                    }
 
-                override fun onAnimationEnd(animation: Animation?) {
-                }
+                    override fun onAnimationRepeat(animation: Animation?) {
+                    }
+                })
+                mViewHolder.mainLayout.startAnimation(animShake)
 
-                override fun onAnimationRepeat(animation: Animation?) {
-                }
-            })
-            mViewHolder.mainLayout.startAnimation(animShake)
-
-            moved(SHAKE_DISTANCE)
+                moved(SHAKE_DISTANCE)
+            }
         }
 
         mShakeDetector = ShakeDetector(options).start(this)

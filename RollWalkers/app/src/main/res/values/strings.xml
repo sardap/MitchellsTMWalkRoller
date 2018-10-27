@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">RollWalkers</string>
-    <string name="signin_other_error">Log in fail tell paul</string>
+    <string name="signin_other_error">Log in fail tell paul %s</string>
     <string name="roll_desc">Last Roll:</string>
     <string name="roll_result_defualt">%d</string>
     <string name="main_menu_option">main screen</string>
@@ -8,6 +8,7 @@
 
     <string name="menu_options">Options</string>
     <string name="menu_view_achievements">Achievements</string>
+    <string name="menu_view_leaderboard">leaderboard</string>
 
     <string name="roll">roll:</string>
     <string name="rolled_max_title">YOU FUCKING DID IT</string>
