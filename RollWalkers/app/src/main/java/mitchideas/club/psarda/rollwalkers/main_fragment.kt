@@ -87,6 +87,7 @@ class MainFragment : Fragment() {
 			mViewHolder.rollResult.text = nextRoll.toString()
 			mViewHolder.animeRollResult.text = nextRoll.toString()
 			mViewHolder.animeRollResult.setTextColor(Color.RED)
+			updateComboText(mData.comboNum)
 		}
 	}
 
@@ -124,9 +125,12 @@ class MainFragment : Fragment() {
 
 					mPrevColour = nextColour
 
+					updateComboText(Main.RANDOM.nextInt(100).toLong())
+
 					if(mData.animeRollStack.size == 0) {
 						nextColour = Color.RED
 						mViewHolder.rollLayout.clearAnimation()
+						updateComboText(mData.comboNum)
 					}
 
 					mViewHolder.rollResult.text = next

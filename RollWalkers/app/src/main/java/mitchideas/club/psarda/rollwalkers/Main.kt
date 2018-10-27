@@ -62,7 +62,7 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
         const val COMBO_CHILD = "combo"
         const val PROGRESS_CHILD = "progress"
         const val SETTINGS_CHILD = "settings"
-        const val DISTANCE_BETWEEN_ROLLS = 1
+        const val DISTANCE_BETWEEN_ROLLS = 20
         const val ANIMATION_COUNT = 50
         const val CHANNEL_NAME = "ROLL_WALKER"
         const val SHAKE_DISTANCE = 0.256
@@ -211,6 +211,7 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
                 if(mActiveFragment !is OptionsFragment)
                 {
                     replaceFragment(OptionsFragment.newInstance(this, this))
+                    AchievementUnlocker().checkedOptions(this)
                 }
 
                 true
@@ -257,6 +258,8 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
     }
 
     fun clearDatabase() {
+        AchievementUnlocker().clearedData(this)
+
         for (entry in mLoaded){
             mLoaded[entry.key] = false
         }
@@ -457,10 +460,6 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
             mData.rollData.last().bestCombo = mData.comboNum
         }
 
-        if(mActiveFragment is MainFragment)
-        {
-            (mActiveFragment as MainFragment).updateComboText(mData.comboNum)
-        }
 
         AchievementUnlocker().checkCombo(this)
         LeaderBoardUpdater().updateComboLeaderboard(this)
@@ -473,6 +472,8 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun sucessfullRoll() {
+        AchievementUnlocker().onSucessAchievement(this)
+
         if(mActiveFragment !is MainFragment)
             Toast.makeText(this, getString(R.string.rolled_max_contents, mData.lastRoll), Toast.LENGTH_LONG).show()
 

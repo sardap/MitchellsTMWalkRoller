@@ -6,6 +6,10 @@ import java.util.*
 
 class AchievementUnlocker {
 
+	companion object {
+	    var lastRoll = 0L
+	}
+
 	private val mData = Data.instance()
 
 	fun CheckRoll(main: Main){
@@ -32,6 +36,32 @@ class AchievementUnlocker {
 		}
 	}
 
+	fun clearedData(main: Main){
+		unlock(main, R.string.achievement_burn_it_all_to_hell)
+	}
+
+	fun checkedOptions(main: Main){
+		unlock(main, R.string.achievement_checking_your_options)
+	}
+
+	fun disalbedAnimation(main: Main){
+		unlock(main, R.string.achievement_you_spat_on_me)
+	}
+
+	fun onSucessAchievement(main: Main){
+
+        if(mData.rollData.last().rolls >= mData.maxRoll * 2){
+            unlock(main, R.string.achievement_slow_arent_you)
+        }
+
+        if(mData.maxRoll > 10){
+			// Check avearge combo
+			if(mData.rollData.last().rolls == mData.maxRoll){
+				unlock(main, R.string.achievement_you_are_average)
+			}
+		}
+	}
+
 	private fun unlock(main: Main, id: Int){
 		Games.getAchievementsClient(main, GoogleSignIn.getLastSignedInAccount(main)!!)
 			.unlockImmediate(main.getString(id))
@@ -49,18 +79,30 @@ class AchievementUnlocker {
 				i++
 			}
 
-			if(rollStackCopy.first() == 80085){
-				unlock(main, R.string.achievement_roll_80085)
+			val nextRoll = rollStackCopy.first() as Long
+
+			val rollAchievements = hashMapOf(
+				80085L to R.string.achievement_roll_80085,
+				1L to R.string.achievement_one_and_done,
+				AchievementUnlocker.lastRoll + 1L to R.string.achievement_roll_consecutive_numbers,
+				mData.maxRoll -1L to R.string.achievement_you_will_always_be_2nd
+			)
+
+			for(entry in rollAchievements){
+				if(nextRoll == entry.key){
+					unlock(main, entry.value)
+				}
 			}
 
 			val calendar = Calendar.getInstance()
 			val day = calendar.get(Calendar.DAY_OF_WEEK)
 
-			if(day == Calendar.TUESDAY && rollStackCopy.first() == 45){
+			if(day == Calendar.TUESDAY && nextRoll == 45L){
 				unlock(main, R.string.achievement_on_a_tuesday_roll_45)
 			}
-
 		}
+
+		AchievementUnlocker.lastRoll = rollStackCopy.first() as Long
 	}
 
 	private fun distanceAchievements(main: Main){

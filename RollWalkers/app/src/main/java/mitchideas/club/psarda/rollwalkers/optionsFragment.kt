@@ -73,8 +73,15 @@ class OptionsFragment : Fragment() {
 		return view
 	}
 
+	override fun onStart() {
+		super.onStart()
+	}
+
 	private fun switchRollAnimation(): Boolean {
 		mData.settings.rollAnimation = !mData.settings.rollAnimation
+		if(!mData.settings.rollAnimation){
+			AchievementUnlocker().disalbedAnimation(activity as Main)
+		}
 		return true
 	}
 

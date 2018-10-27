@@ -11,8 +11,8 @@ android {
         applicationId "mitchideas.club.psarda.rollwalkers"
         minSdkVersion 23
         targetSdkVersion 28
-        versionCode 1005
-        versionName 'Beta 1.05'
+        versionCode 1006
+        versionName 'Beta 1.06'
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {

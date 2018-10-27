@@ -1,7 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+Google Play game services IDs.
+Save this file as res/values/games-ids.xml in your project.
+-->
 <resources>
-    <string name="app_id">1012008483734</string>
-
+    <!-- app_id -->
+    <string name="app_id" translatable="false">1012008483734</string>
+    <!-- package_name -->
+    <string name="package_name" translatable="false">mitchideas.club.psarda.rollwalkers</string>
+    <!-- achievement Stared victory in the face and walked straight past -->
     <string name="achievement_stared_victory_in_the_face_and_walked_straight_past" translatable="false">CgkIlvefg7odEAIQAQ</string>
     <!-- achievement Baby steps -->
     <string name="achievement_baby_steps" translatable="false">CgkIlvefg7odEAIQBg</string>
@@ -29,13 +36,28 @@
     <string name="achievement_roll_80085" translatable="false">CgkIlvefg7odEAIQEg</string>
     <!-- achievement On a Tuesday roll 45 -->
     <string name="achievement_on_a_tuesday_roll_45" translatable="false">CgkIlvefg7odEAIQEw</string>
-
+    <!-- achievement Yuri Gagarin -->
     <string name="achievement_yuri_gagarin" translatable="false">CgkIlvefg7odEAIQFQ</string>
+    <!-- achievement Roll consecutive numbers -->
+    <string name="achievement_roll_consecutive_numbers" translatable="false">CgkIlvefg7odEAIQFg</string>
+    <!-- achievement You will always be 2nd -->
+    <string name="achievement_you_will_always_be_2nd" translatable="false">CgkIlvefg7odEAIQFw</string>
+    <!-- achievement One and done -->
+    <string name="achievement_one_and_done" translatable="false">CgkIlvefg7odEAIQGA</string>
+    <!-- achievement Checking your options -->
+    <string name="achievement_checking_your_options" translatable="false">CgkIlvefg7odEAIQGQ</string>
+    <!-- achievement Burn it all to hell -->
+    <string name="achievement_burn_it_all_to_hell" translatable="false">CgkIlvefg7odEAIQGg</string>
+    <!-- achievement You spat on me -->
+    <string name="achievement_you_spat_on_me" translatable="false">CgkIlvefg7odEAIQGw</string>
+    <!-- achievement You are average -->
+    <string name="achievement_you_are_average" translatable="false">CgkIlvefg7odEAIQHA</string>
+    <!-- achievement Slow aren't you -->
+    <string name="achievement_slow_arent_you" translatable="false">CgkIlvefg7odEAIQHQ</string>
     <!-- leaderboard Highest Target -->
     <string name="leaderboard_highest_target" translatable="false">CgkIlvefg7odEAIQCA</string>
-    <!-- leaderboard Combo -->
-    <string name="leaderboard_combo" translatable="false">CgkIlvefg7odEAIQFA</string>
     <!-- leaderboard Crashes -->
     <string name="leaderboard_crashes" translatable="false">CgkIlvefg7odEAIQCg</string>
-
+    <!-- leaderboard combo -->
+    <string name="leaderboard_combo" translatable="false">CgkIlvefg7odEAIQFA</string>
 </resources>
