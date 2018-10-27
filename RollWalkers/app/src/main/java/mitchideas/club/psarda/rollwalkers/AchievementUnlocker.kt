@@ -26,9 +26,9 @@ class AchievementUnlocker {
 		val curCombo = mData.comboNum
 
 		when {
-			curCombo > 50 -> unlock(main, R.string.achievement_combo_maximums)
-			curCombo > 15 -> unlock(main, R.string.achievement_combo_major)
-			curCombo > 5 -> unlock(main, R.string.achievement_combo_lesser)
+			curCombo >= 50 -> unlock(main, R.string.achievement_combo_maximums)
+			curCombo >= 15 -> unlock(main, R.string.achievement_combo_major)
+			curCombo >= 5 -> unlock(main, R.string.achievement_combo_lesser)
 		}
 	}
 
@@ -71,6 +71,7 @@ class AchievementUnlocker {
 		}
 
 		when {
+			totalDistanceTravled > 327 * 1000 -> unlock(main, R.string.achievement_yuri_gagarin)
 			totalDistanceTravled > 1 -> unlock(main, R.string.achievement_baby_steps)
 		}
 
@@ -83,13 +84,28 @@ class AchievementUnlocker {
 			totalShakes += roll.shakes
 		}
 
-		when {
-			totalShakes > 7000 -> unlock(main, R.string.achievement_shakeius_maximums)
-			totalShakes > 6000 -> unlock(main, R.string.achievement_shakeius_consul)
-			totalShakes > 5000 -> unlock(main, R.string.achievement_shakeius_senator)
-			totalShakes > 4000 -> unlock(main, R.string.achievement_shakeius_quaestor)
-			totalShakes > 3000 -> unlock(main, R.string.achievement_shakeius_military_tribune)
-			totalShakes > 2000 -> unlock(main, R.string.achievement_why_walk_when_you_can_shake)
+		if(totalShakes > 7000){
+			unlock(main, R.string.achievement_shakeius_maximums)
+		}
+
+		if(totalShakes > 6000){
+			unlock(main, R.string.achievement_shakeius_consul)
+		}
+
+		if(totalShakes > 5000){
+			unlock(main, R.string.achievement_shakeius_senator)
+		}
+
+		if(totalShakes > 4000){
+			unlock(main, R.string.achievement_shakeius_quaestor)
+		}
+
+		if(totalShakes > 3000){
+			unlock(main, R.string.achievement_shakeius_military_tribune)
+		}
+
+		if(totalShakes > 2000){
+			unlock(main, R.string.achievement_why_walk_when_you_can_shake)
 		}
 	}
 

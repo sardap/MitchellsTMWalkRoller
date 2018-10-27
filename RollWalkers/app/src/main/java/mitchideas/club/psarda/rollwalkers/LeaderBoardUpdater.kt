@@ -12,4 +12,9 @@ class LeaderBoardUpdater {
         Games.getLeaderboardsClient(main, GoogleSignIn.getLastSignedInAccount(main)!!)
             .submitScore(main.getString(R.string.leaderboard_highest_target), mData.maxRoll)
     }
+
+    fun updateComboLeaderboard(main: Main){
+        Games.getLeaderboardsClient(main, GoogleSignIn.getLastSignedInAccount(main)!!)
+            .submitScore(main.getString(R.string.leaderboard_combo), mData.maxCombo)
+    }
 }

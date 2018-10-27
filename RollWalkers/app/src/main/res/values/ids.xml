@@ -29,10 +29,12 @@
     <string name="achievement_roll_80085" translatable="false">CgkIlvefg7odEAIQEg</string>
     <!-- achievement On a Tuesday roll 45 -->
     <string name="achievement_on_a_tuesday_roll_45" translatable="false">CgkIlvefg7odEAIQEw</string>
+
+    <string name="achievement_yuri_gagarin" translatable="false">CgkIlvefg7odEAIQFQ</string>
     <!-- leaderboard Highest Target -->
     <string name="leaderboard_highest_target" translatable="false">CgkIlvefg7odEAIQCA</string>
     <!-- leaderboard Combo -->
-    <string name="leaderboard_combo" translatable="false">CgkIlvefg7odEAIQCQ</string>
+    <string name="leaderboard_combo" translatable="false">CgkIlvefg7odEAIQFA</string>
     <!-- leaderboard Crashes -->
     <string name="leaderboard_crashes" translatable="false">CgkIlvefg7odEAIQCg</string>
 

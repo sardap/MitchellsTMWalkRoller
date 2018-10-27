@@ -36,7 +36,6 @@ import com.google.android.gms.games.Games
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.tasks.OnSuccessListener
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -44,16 +43,15 @@ import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.database.*
 import safety.com.br.android_shake_detector.core.ShakeDetector
 import safety.com.br.android_shake_detector.core.ShakeOptions
-import java.lang.Exception
 import java.util.*
 
 class Main : AppCompatActivity(), OnMapReadyCallback {
 
     companion object {
-        private const val RC_SIGN_IN = 9001
-        private const val PERMISSION_REQUEST_ACCESS_FINE_LOCATION = 100
-        private const val RC_ACHIEVEMENT_UI = 9003
-        private const val RC_LEADERBOARD_UI = 9004
+        const val RC_SIGN_IN = 9001
+        const val PERMISSION_REQUEST_ACCESS_FINE_LOCATION = 100
+        const val RC_ACHIEVEMENT_UI = 9003
+        const val RC_LEADERBOARD_UI = 9004
 
         val RANDOM = Random()
 
@@ -210,9 +208,9 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
                 true
             }
             R.id.menu_options -> {
-                if(mActiveFragment !is optionsFragment)
+                if(mActiveFragment !is OptionsFragment)
                 {
-                    replaceFragment(optionsFragment.newInstance(this, this))
+                    replaceFragment(OptionsFragment.newInstance(this, this))
                 }
 
                 true
@@ -222,7 +220,11 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
                 true
             }
             R.id.menu_view_leaderboard -> {
-                showLeaderboard()
+                if(mActiveFragment !is LeaderboardsFragment)
+                {
+                    replaceFragment(LeaderboardsFragment.newInstance(this))
+                }
+
                 true
             }
             else -> super.onOptionsItemSelected(item)
@@ -344,12 +346,6 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
         .addOnSuccessListener { intent -> startActivityForResult(intent, RC_ACHIEVEMENT_UI) };
     }
 
-    private fun showLeaderboard() {
-      Games.getLeaderboardsClient(this, GoogleSignIn.getLastSignedInAccount(this)!!)
-          .getLeaderboardIntent(getString(R.string.leaderboard_highest_target))
-          .addOnSuccessListener { intent -> startActivityForResult(intent, RC_LEADERBOARD_UI); }
-    }
-
     private fun replaceFragment(newFragment: Fragment) {
         val fragmentManager = supportFragmentManager
 
@@ -467,6 +463,7 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
         }
 
         AchievementUnlocker().checkCombo(this)
+        LeaderBoardUpdater().updateComboLeaderboard(this)
     }
 
     private fun addRollToDatabase()
