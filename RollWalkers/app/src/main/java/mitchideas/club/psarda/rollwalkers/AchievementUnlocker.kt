@@ -22,8 +22,8 @@ class AchievementUnlocker {
 		distanceAchievements(main)
 	}
 
-	fun checkShake(main: Main){
-		checkShakeAchievements(main)
+	fun checkShake(main: Main, speed: Float){
+		checkShakeAchievements(main, speed)
 	}
 
 	fun checkCombo(main: Main){
@@ -119,7 +119,7 @@ class AchievementUnlocker {
 
 	}
 
-	private fun checkShakeAchievements(main: Main){
+	private fun checkShakeAchievements(main: Main, speed: Float){
 		var totalShakes = 0.0
 
 		for(roll in mData.rollData){
@@ -148,6 +148,23 @@ class AchievementUnlocker {
 
 		if(totalShakes > 2000){
 			unlock(main, R.string.achievement_why_walk_when_you_can_shake)
+		}
+
+		if(speed > 1000) {
+			unlock(main, R.string.achievement_weak_boy)
+		}
+
+		if(speed > 7000) {
+			unlock(main, R.string.achievement_strong_man)
+		}
+
+
+		if(speed > 15000) {
+			unlock(main, R.string.achievement_the_bear)
+		}
+
+		if(Math.round(speed) == 6068) {
+			unlock(main, R.string.achievement_strong_man)
 		}
 	}
 

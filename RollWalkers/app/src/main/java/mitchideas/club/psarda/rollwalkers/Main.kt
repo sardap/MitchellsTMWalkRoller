@@ -8,6 +8,8 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.hardware.SensorListener
+import android.hardware.SensorManager
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
@@ -65,8 +67,8 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
         const val DISTANCE_BETWEEN_ROLLS = 20
         const val ANIMATION_COUNT = 50
         const val CHANNEL_NAME = "ROLL_WALKER"
-        const val SHAKE_DISTANCE = 0.256
         const val START_MAX_ROLL = 10L
+        const val MIN_SHAKE_SPEED = 800f
 
         private const val MIN_ROLL = 1L
 
@@ -696,21 +698,67 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
             })
     }
 
+
     private fun setupShakeDectector() {
-        val options = ShakeOptions()
-            .background(true)
-            .interval(1000)
-            .shakeCount(1)
-            .sensibility(3f)
+        val sensorMgr =  getSystemService(SENSOR_SERVICE) as SensorManager
 
-        mShakeDetector = ShakeDetector(options).start(this) {
-            Log.d(TAG, "SHAKEN")
-            
-            if(mLoaded.all { it.value }){
-                mData.rollData.last().shakes++
+        val listner = object : SensorListener{
+            var mLastUpdate = 0L
+            var last_x: Float = 0f
+            var last_y: Float = 0f
+            var last_z: Float = 0f
+            var best = 0f
 
-                AchievementUnlocker().checkShake(this)
 
+            override fun onAccuracyChanged(sensor: Int, accuracy: Int) {
+            }
+
+            override fun onSensorChanged(sensor: Int, values: FloatArray?) {
+                if (sensor == SensorManager.SENSOR_ACCELEROMETER) {
+                    val curTime = System.currentTimeMillis();
+                    // only allow one update every 100ms.
+                    if ((curTime - mLastUpdate) > 300) {
+                        val diffTime = (curTime - mLastUpdate);
+                        mLastUpdate = curTime;
+
+                        val x = values!![SensorManager.DATA_X];
+                        val y = values[SensorManager.DATA_Y];
+                        val z = values[SensorManager.DATA_Z];
+
+                        val speed = Math.abs(x+y+z - last_x - last_y - last_z) / diffTime * 10000
+
+                        if(speed > best){
+                            best = speed
+                            Log.d(TAG, "NEXT BEST $speed")
+                        }
+
+                        if(speed > MIN_SHAKE_SPEED){
+                            processShake(speed)
+                        }
+
+                        last_x = x
+                        last_y = y
+                        last_z = z
+                    }
+                }
+            }
+        }
+
+        sensorMgr.registerListener(listner,
+            SensorManager.SENSOR_ACCELEROMETER,
+            SensorManager.SENSOR_DELAY_GAME);
+
+    }
+
+    private fun processShake(speed: Float) {
+        Log.d(TAG, "SHAKEN $speed")
+
+        if(mLoaded.all { it.value }){
+            mData.rollData.last().shakes++
+
+            AchievementUnlocker().checkShake(this, speed)
+
+            if(speed > MIN_SHAKE_SPEED * 5){
                 mViewHolder.mainLayout.clearAnimation()
                 val animShake = AnimationUtils.loadAnimation(this, R.anim.shake)
 
@@ -726,11 +774,11 @@ class Main : AppCompatActivity(), OnMapReadyCallback {
                 })
                 mViewHolder.mainLayout.startAnimation(animShake)
 
-                moved(SHAKE_DISTANCE)
             }
+
+            moved(speed.toDouble() / 3000)
         }
 
-        mShakeDetector = ShakeDetector(options).start(this)
     }
 
 }

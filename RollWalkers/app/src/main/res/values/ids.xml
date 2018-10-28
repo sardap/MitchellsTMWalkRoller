@@ -54,6 +54,14 @@ Save this file as res/values/games-ids.xml in your project.
     <string name="achievement_you_are_average" translatable="false">CgkIlvefg7odEAIQHA</string>
     <!-- achievement Slow aren't you -->
     <string name="achievement_slow_arent_you" translatable="false">CgkIlvefg7odEAIQHQ</string>
+    <!-- achievement Weak boy -->
+    <string name="achievement_weak_boy" translatable="false">CgkIlvefg7odEAIQHg</string>
+    <!-- achievement Strong man -->
+    <string name="achievement_strong_man" translatable="false">CgkIlvefg7odEAIQHw</string>
+    <!-- achievement THE BEAR -->
+    <string name="achievement_the_bear" translatable="false">CgkIlvefg7odEAIQIA</string>
+    <!-- achievement As strong as Paul -->
+    <string name="achievement_as_strong_as_paul" translatable="false">CgkIlvefg7odEAIQIQ</string>
     <!-- leaderboard Highest Target -->
     <string name="leaderboard_highest_target" translatable="false">CgkIlvefg7odEAIQCA</string>
     <!-- leaderboard Crashes -->
